@@ -14,7 +14,7 @@ enjoy writing a source code in any language if you use
   : (jda-minor-mode)
 
 * Features
-** Easily build
+** Build
    If there is Makefile in your project or .xcodeproj, you can build a
    project easily by pressing =C-c c= in any subdirectory of your
    project.
@@ -23,41 +23,41 @@ enjoy writing a source code in any language if you use
    Press =C-c h= at the symbol which you want to find in a development
    documentation(Android or Xcode).
 
-** Rapidly open a counterpart file
+** Open a counterpart file
    You can quickly open the counterpart of the current buffer by
    pressing =C-c j p=. In other words, if the current buffer is c or
    cpp source file, you can easily visit the header file related it by
    pressing =C-c j p=.
 
-** Briefly find out lines containing a symbol
+** Find a symbol in the project
    You can simply search positions which a symbol at point is used in
    your project by pressing =C-c j s=. It uses (grep-find).
 
-** Quickly find a file
+** Find a file in the project
    You can rapidly find a file in your project by pressing =C-c j f=.
 
-** Quickly visit a file in your project
+** Visit a file in the project
    You can easily open the file you want to visit in your project by
    pressing =C-c j i= or =C-c i=. It supports incremental search like
    TextMate or Visual Assist. As you type text, one or more possible
    matches for the text are found and immediately displayed.
 
-** Find a symbol in your project
+** Find a symbol in the project
    If you want to find a symbol in your project, press =C-c j s=.
    After finding it, you can easily navigate the symbols by pressing
    =M-g p= or =M-g n=.
    
-** Rapidly go to a symbol in the current buffer
+** Go to a symbol in the current buffer
    Press =C-c j m= or =C-c m= if you want to go to a function. You can
    see all functions defined in the current buffer. It supports
    incremental search like TextMate or Visual Assist.
 
-** Easily replace a string in several files
+** Replace a string in several files
    If you want to replace a string in several files, press =C-c j 5=
    or =C-c j %=. You can easily replace a string in specified files in
    your project.
 
-** Easily create a TAG in your project
+** Create a TAG in your project
    Press =C-c j t= and you can easily create TAG file in your project
    using 'find' and 'etags'.
    
