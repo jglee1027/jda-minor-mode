@@ -438,6 +438,29 @@
 											   symbol)
 									   'jda-gf-symbol-command-history))))
 
+(defun jda-gf-text-at-point ()
+  "grep-find with text at current point."
+  (interactive)
+  (jda-mark-push-marker)
+  (let (symbol)
+	(jda-gf-set-project-root)
+	(setq symbol (symbol-at-point))
+	(if (null symbol)
+		(setq symbol ""))
+	(setq symbol (read-from-minibuffer "Find symbol: "
+									   (format "%s" symbol)
+									   nil
+									   nil
+									   'jda-gf-symbol-history))
+	(setq compilation-finish-function 'jda-gf-select-grep-buffer)
+	(grep-find (jda-read-shell-command "Command: "
+									   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e \"%s\""
+											   jda-gf-project-root
+											   (jda-gf-get-assoc-find-name-options)
+											   (jda-gf-get-find-exclusive-path-options)
+											   symbol)
+									   'jda-gf-symbol-command-history))))
+
 (defun jda-gf-grep-query-replace-in-current-line (from to buffer)
   (let (begin end)
 	(with-current-buffer buffer
@@ -1121,6 +1144,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c j r")		'jda-gf-set-project-root)
 	(define-key map (kbd "C-c j e")		'jda-gf-set-exclusive-path)
 	(define-key map (kbd "C-c j s")		'jda-gf-symbol-at-point)
+	(define-key map (kbd "C-c j S")		'jda-gf-text-at-point)
 	(define-key map (kbd "C-c j f")		'jda-gf-find-file)
 	(define-key map (kbd "C-c j i")		'jda-ido-find-file)
 	(define-key map (kbd "C-c i")		'jda-ido-find-file)
