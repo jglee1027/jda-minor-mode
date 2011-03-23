@@ -1,7 +1,8 @@
-=jda-minor-mode= is a minor-mode for all developers written by Lee
-Jong-Gyu.  I was deeply impressed by TextMate and Visual Assist. I
-wanted to develop a minor-mode in Emacs. No doubt you will always
-enjoy writing a source code in any language if you use
+=jda-minor-mode= is an Emacs minor-mode written by Lee Jong-Gyu for
+all developers.  I developed =jda-minor-mode= with the aim of
+providing developers with convenience because I had been deeply
+impressed by TextMate and Visual Assist.  No doubt you will always
+enjoy writing a source code in any programming language if you use
 =jda-minor-mode=.
 
 * Quick setup
@@ -15,8 +16,8 @@ enjoy writing a source code in any language if you use
 
 * Features
 ** Build
-   If there is Makefile in your project or .xcodeproj, you can build a
-   project easily by pressing =C-c c= in any subdirectory of your
+   If there is Makefile or .xcodeproj in your project , you can build
+   a project easily by pressing =C-c c= in any subdirectory of your
    project.
 
 ** Find development doucmentation
