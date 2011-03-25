@@ -1,40 +1,105 @@
 ;;; jda.el --- Jong-Gyu Development Assistant minor mode for Developers
-;;
+
 ;; Copyright (C) 2011 Lee Jong-Gyu<jglee1027@gmail.com>
-;;
+
 ;; Authors: Lee Jong-Gyu<jglee1027@gmail.com>
 ;; Maintainer: Lee Jong-Gyu<jglee1027@gmail.com>
 ;; Created: 18 Mar 2011
 ;; Version: 0.1.0
-;; Keywords: languages
+;; Keywords: languages, tools
 ;; Repository: git://github.com/jglee1027/jda-minor-mode.git
-;;
+
 ;; This file is NOT part of GNU Emacs.
-;; 
-;; * License
-;; 	 This program is free software; you can redistribute it and/or modify
-;; 	 it under the terms of the GNU General Public License as published by
-;; 	 the Free Software Foundation; either version 2, or (at your option)
-;; 	 any later version.
-;; 
-;; 	 This program is distributed in the hope that it will be useful,
-;; 	 but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; 	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; 	 GNU General Public License for more details.
-;; 
-;; 	 You should have received a copy of the GNU General Public License
-;; 	 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-;; 
+
+;; This file is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; It is distributed in the hope that it will be useful, but WITHOUT
+;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+;; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+;; License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with it.  If not, see <http://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;; 
+
+;; JDA(Jong Gyu Development Assistant) is a minor mode for developers
+;; who use various programming languages. The major aim of JDA is to
+;; offer pleasure for developers. No doubt you will always enjoy
+;; writing a source code in any programming language if you use it.
+
 ;; * Installation
 ;;   Edit your ~/.emacs file to add the line:
 ;;     (add-to-list 'load-path "/path/to/jda-minor-mode")
 ;;     (require 'jda)
 ;; 	   (jda-minor-mode)
-;; 
+
 ;; * Major commands:
-;;   See `jda-minor-keymap'
+;; ** Build
+;;    If there is Makefile or .xcodeproj in your project , you can build
+;;    a project easily by pressing "C-c c" in any subdirectory of your
+;;    project.
+
+;; ** Find development doucmentation
+;;    Press "C-c h" at the symbol which you want to find in a development
+;;    documentation(Android or Xcode).
+
+;; ** Open a counterpart file
+;;    You can quickly open the counterpart of the current buffer by
+;;    pressing "C-c j p". In other words, if the current buffer is c or
+;;    cpp source file, you can easily visit the header file related it by
+;;    pressing "C-c j p".
+
+;; ** Find a symbol in the project
+;;    You can simply search positions which a symbol at point is used in
+;;    your project by pressing "C-c j s". It uses (grep-find).
+
+;; ** Find a file in the project
+;;    You can rapidly find a file in your project by pressing "C-c j f".
+
+;; ** Visit a file in the project
+;;    You can easily open the file you want to visit in your project by
+;;    pressing "C-c j i" or "C-c i". It supports incremental search like
+;;    TextMate or Visual Assist. As you type text, one or more possible
+;;    matches for the text are found and immediately displayed.
+
+;; ** Find a symbol in the project
+;;    If you want to find a symbol in your project, press "C-c j s".
+;;    After finding it, you can easily navigate the symbols by pressing
+;;    "M-g p" or "M-g n".
+   
+;; ** Go to a symbol in the current buffer
+;;    Press "C-c j m" or "C-c m" if you want to go to a function. You can
+;;    see all functions defined in the current buffer. It supports
+;;    incremental search like TextMate or Visual Assist.
+
+;; ** Replace a string in several files
+;;    If you want to replace a string in several files, press "C-c j 5"
+;;    or "C-c j %". You can easily replace a string in specified files in
+;;    your project.
+
+;; ** Create a TAG in your project
+;;    Press "C-c j t" and you can easily create TAG file in your project
+;;    using 'find' and 'etags'.
+   
+;; ** Go to previous or next marker
+;;    Press "C-c ," to go to the previous marker and Press "C-c ." to go
+;;    to the next marker.
+;;    Press "C-x <down>" to save the current marker.
+   
+;; ** Highlight symbol
+;;    If you want to see highlighted symbol at point, press "C-c j h".
+;;    After specified idle time, the current symbol at point is
+;;    highlighted.  It only works in file buffer.
+   
+;; ** Insert or Delete a bracket in Objective-C mode
+;;    Press "C-c ]" to insert a right bracket to pair.
+;;    Press "C-c [" to delete left and right brackets to pair.
+
+;;   See `jda-minor-keymap' for more details.
 
 ;;; Code:
 
@@ -1205,6 +1270,7 @@ ex) make -C project/root/directory"
 
 (defvar jda-minor-mode-map (jda-minor-keymap))
 
+;;;###autoload
 (define-minor-mode jda-minor-mode
   "Toggle Jong-Gyu Development Assistant mode.
 
@@ -1240,11 +1306,13 @@ Key bindings:
 		 (remove-hook 'emulation-mode-map-alists 'yas/direct-keymaps)
 		 (message "jda minor mode disabled"))))
 
+;;;###autoload
 (defun jda-customize ()
   "Customize jda"
   (interactive)
   (customize-group 'jda))
 
+;;;###autoload
 (defun jda-about ()
   "About JDA"
   (interactive)
