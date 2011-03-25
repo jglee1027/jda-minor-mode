@@ -10,7 +10,7 @@ enjoy writing a source code in any programming language if you use
   : ~$ git clone git://github.com/jglee1027/jda-minor-mode.git
 
   Add the following in ~/.emacs
-  : (add-to-list 'load-path "~/jda-minor-mode")
+  : (add-to-list 'load-path "/path/to/jda-minor-mode")
   : (require 'jda)
   : (jda-minor-mode)
 

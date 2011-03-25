@@ -1,10 +1,13 @@
-;;; jda.el --- Jong-Gyu Development Assistant for Emacs
+;;; jda.el --- Jong-Gyu Development Assistant minor mode for Developers
 ;;
-;; Copyright (C) 2010 Lee Jong-Gyu<jglee1027@gmail.com>
+;; Copyright (C) 2011 Lee Jong-Gyu<jglee1027@gmail.com>
 ;;
 ;; Authors: Lee Jong-Gyu<jglee1027@gmail.com>
+;; Maintainer: Lee Jong-Gyu<jglee1027@gmail.com>
+;; Created: 18 Mar 2011
 ;; Version: 0.1.0
-;; Repository: git://github.com/jglee1027/settings.git
+;; Keywords: languages
+;; Repository: git://github.com/jglee1027/jda-minor-mode.git
 ;;
 ;; This file is NOT part of GNU Emacs.
 ;; 
@@ -26,8 +29,9 @@
 ;; 
 ;; * Installation
 ;;   Edit your ~/.emacs file to add the line:
-;;     (add-to-list 'load-path "/path/to/jda.el")
+;;     (add-to-list 'load-path "/path/to/jda-minor-mode")
 ;;     (require 'jda)
+;; 	   (jda-minor-mode)
 ;; 
 ;; * Major commands:
 ;;   See `jda-minor-keymap'
@@ -37,7 +41,8 @@
 (require 'cl)
 (require 'imenu)
 (require 'ido)
-(require 'jda-highlight)
+(require 'hi-lock)
+(require 'thingatpt)
 
 (defgroup jda nil
   "Jong-Gyu Development Assistant"
@@ -75,6 +80,13 @@
 (defvar jda-xcode-sdk-history nil)
 (defvar jda-xcode-project-history nil)
 (defvar jda-xcode-build-history nil)
+
+(defvar jda-highlight-symbol-color 'isearch)
+(defvar jda-highlight-symbol-timer-interval 0.7)
+(defvar jda-highlight-symbol-timer nil)
+(defvar jda-highlight-symbol-buffers-alist nil)
+(defvar jda-highlight-symbol-regex nil)
+(make-variable-buffer-local 'jda-highlight-symbol-regex)
 
 (defcustom jda-gf-assoc-extension-alist
   '(("c"		. "*.[cChH] *.[cC][pP][pP] *.[mM] *.[mM][mM]")
@@ -152,6 +164,53 @@
 								  nil
 								  ,initial-input
 								  ,history)))))
+
+;;;; jda-highlight
+
+;; callback function 
+(defun jda-highlight-symbol-callback ()
+  (save-excursion
+	(let* ((symbol (symbol-at-point))
+		   (symbol-regex (cond ((and symbol)
+								(concat "\\<"
+										(regexp-quote (symbol-name symbol))
+										"\\>"))
+							   (t
+								nil))))
+	  (cond ((and symbol-regex
+				  (not (string= symbol-regex jda-highlight-symbol-regex))
+				  (buffer-file-name))
+			 (hi-lock-unface-buffer jda-highlight-symbol-regex)
+			 (hi-lock-face-buffer symbol-regex
+								  jda-highlight-symbol-color)
+			 (setq jda-highlight-symbol-buffers-alist
+				   (assq-delete-all (current-buffer)
+									jda-highlight-symbol-buffers-alist))
+			 (add-to-list 'jda-highlight-symbol-buffers-alist
+						  (list (current-buffer) symbol-regex) t)
+			 (setq jda-highlight-symbol-regex symbol-regex))))))
+
+;; start function
+(defun jda-highlight-symbol-run-toggle ()
+  (interactive)
+  (cond ((timerp jda-highlight-symbol-timer)
+		 (cancel-timer jda-highlight-symbol-timer)
+		 (while jda-highlight-symbol-buffers-alist
+		   (let* ((entry (pop jda-highlight-symbol-buffers-alist))
+				  (buffer (pop entry))
+				  (symbol-regex (pop entry)))
+			 (condition-case nil
+				 (progn
+				   (set-buffer buffer)
+				   (hi-lock-unface-buffer jda-highlight-symbol-regex))
+			   (error nil))))
+		 (message "jda-highlight-symbol off.")
+		 (setq jda-highlight-symbol-timer nil))
+		(t
+		 (unless hi-lock-mode (hi-lock-mode 1))
+		 (setq jda-highlight-symbol-timer
+			   (run-with-idle-timer jda-highlight-symbol-timer-interval t 'jda-highlight-symbol-callback))
+		 (message "jda-highlight-symbol on."))))
 
 ;;;; jda-mark
 
@@ -816,24 +875,6 @@
 		   (find-file (ido-completing-read "Find file: "
 										   same-name-files-list))))))
 
-(defun jda-svn-log-report ()
-  (interactive)
-  (let (command
-		id
-		start-date
-		end-date)
-	(jda-gf-set-project-root)
-	(setq id (read-from-minibuffer "Id: "))
-	(setq start-date (read-from-minibuffer "Start date: "))
-	(setq end-date (read-from-minibuffer "End date: "))
-	(setq command (jda-read-shell-command
-				   "Command: "
-				   (format "cd %s; svn log | ~/settings/emacs/svnlr.rb -id %s -sd %s -ed %s"
-						   jda-gf-project-root
-						   id
-						   start-date
-						   end-date)))
-	(shell-command command "*svn-log-report*")))
 
 ;;; xcode
 
@@ -1123,8 +1164,6 @@ ex) make -C project/root/directory"
 		 :help "Align a region"]
 		["Align Regexp..." align-regexp
 		 :help "Align the current region using an ad-hoc rule"]
-		["Report SVN Log..." jda-svn-log-report
-		 :help "Report svn log using a condition"]
 		["hs-minor-mode" hs-minor-mode
 		 :help "hs-minor-mode on/off"]
 		["Highlight Symbol" jda-highlight-symbol-run-toggle
@@ -1160,7 +1199,6 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-x <down>")	'jda-mark-push-marker)
 	(define-key map (kbd "C-c |")		'align)
 	(define-key map (kbd "C-c M-|")		'align-regexp)
-	(define-key map (kbd "C-x v #")		'jda-svn-log-report)
 	(define-key map (kbd "C-c j [")		'hs-minor-mode)
 	(define-key map (kbd "C-c j h")		'jda-highlight-symbol-run-toggle)
 	map))
