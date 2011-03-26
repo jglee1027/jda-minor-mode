@@ -63,7 +63,7 @@ enjoy writing a source code in any programming language if you use
    using 'find' and 'etags'.
    
 ** Go to previous or next marker
-   Press =C-c ,= to go to the previous marker and Press =C-c .= to go
+   Press =C-c comma= to go to the previous marker and Press =C-c .= to go
    to the next marker.
    Press =C-x <down>= to save the current marker.
    
