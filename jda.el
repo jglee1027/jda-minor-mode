@@ -941,6 +941,11 @@
 										   same-name-files-list))))))
 
 
+(defun jda-ido-find-file-reset-root ()
+  (interactive)
+  (setq jda-ido-find-file-files-alist-root nil)
+  (jda-ido-find-file))
+
 ;;; xcode
 
 (defun jda-xcode-doc ()
@@ -1251,7 +1256,9 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c j S")		'jda-gf-text-at-point)
 	(define-key map (kbd "C-c j f")		'jda-gf-find-file)
 	(define-key map (kbd "C-c j i")		'jda-ido-find-file)
+	(define-key map (kbd "C-c j I")		'jda-ido-find-file-reset-root)
 	(define-key map (kbd "C-c i")		'jda-ido-find-file)
+	(define-key map (kbd "C-c I")		'jda-ido-find-file-reset-root)
 	(define-key map (kbd "C-c j m")		'jda-goto-symbol)
 	(define-key map (kbd "C-c m")		'jda-goto-symbol)
 	(define-key map (kbd "C-c j 5")		'jda-gf-grep-query-replace)
