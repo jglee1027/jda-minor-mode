@@ -1177,6 +1177,23 @@ ex) make -C project/root/directory"
   (define-key objc-mode-map (kbd "C-c [") 'jda-delete-objc-parenthesis)
   (define-key objc-mode-map (kbd "C-c ]") 'jda-insert-objc-parenthesis))
 
+;;;; rails
+
+(defun jda-rinari-web-server-debug ()
+  (interactive)
+  (let ((default-directory (rinari-root)))
+	(if (null default-directory)
+		(message (format "%s is not a part of Rails project"
+						 (buffer-name)))
+	  (rdebug (jda-read-shell-command "Run rdebug(like this): "
+									  (format "rdebug --emacs 3 %sscript/server"
+											  default-directory))))))
+
+(defun jda-rinari-keymap ()
+  (message "jda-rinari-keymap")
+  (define-key rinari-minor-mode-map (kbd "C-c ; W") 'jda-rinari-web-server-debug)
+  (define-key rinari-minor-mode-map (kbd "C-c ' W") 'jda-rinari-web-server-debug))
+
 ;;;; jda-minor mode functions
 
 (defun jda-minor-keymap ()
@@ -1230,6 +1247,10 @@ ex) make -C project/root/directory"
 		 ["Delete '['" jda-delete-objc-parenthesis
 		  :help "Delete '[' bracket parenthetically"
 		  :active (equal mode-name "ObjC/l")])
+		("Rails"
+		 ["Debug" jda-rinari-web-server-debug
+		  :help "Debug the current Rails project"
+		  :active (assoc 'rinari-minor-mode minor-mode-alist)])
 		["Align" align
 		 :help "Align a region"]
 		["Align Regexp..." align-regexp
@@ -1302,12 +1323,14 @@ Key bindings:
 			 (ffap-bindings))
          (add-hook 'emulation-mode-map-alists 'yas/direct-keymaps)
 		 (add-hook 'objc-mode-hook 'jda-objc-keymap)
+		 (add-hook 'rinari-minor-mode-hook 'jda-rinari-keymap)
 		 (add-hook 'isearch-mode-hook 'jda-mark-push-marker)
 		 (add-hook 'isearch-mode-end-hook 'jda-mark-push-marker)
 		 (message "jda minor mode enabled"))
 		(t
 		 ;; finalize
 		 (remove-hook 'objc-mode-hook 'jda-objc-keymap)
+		 (remove-hook 'rinari-minor-mode-hook 'jda-rinari-keymap)
 		 (remove-hook 'isearch-mode-hook 'jda-mark-push-marker)
 		 (remove-hook 'isearch-mode-end-hook 'jda-mark-push-marker)
 		 (remove-hook 'emulation-mode-map-alists 'yas/direct-keymaps)
