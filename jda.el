@@ -153,6 +153,8 @@
 (defvar jda-highlight-symbol-regex nil)
 (make-variable-buffer-local 'jda-highlight-symbol-regex)
 
+(defvar jda-kill-ring-save-is-set t)
+
 (defcustom jda-gf-assoc-extension-alist
   '(("c"		. "*.[cChH] *.[cC][pP][pP] *.[mM] *.[mM][mM]")
 	("cpp"		. "*.[cChH] *.[cC][pP][pP] *.[mM] *.[mM][mM]")
@@ -472,6 +474,26 @@
 			 (jda-visit-file-in-dirs 2 2)
 			 (jda-visit-file-in-project)
 			 (throw 'visit-file-exception "Not found!"))))
+
+(defun jda-kill-ring-save-toggle ()
+  (interactive)
+  (cond (jda-kill-ring-save-is-set
+		 (message "jda-kill-ring-save off")
+		 (setq jda-kill-ring-save-is-set nil))
+		(t
+		 (message "jda-kill-ring-save on")
+		 (setq jda-kill-ring-save-is-set t))))
+
+(defun jda-kill-ring-save (begin end)
+  (interactive "r")
+  (cond ((and jda-kill-ring-save-is-set
+			  (not (use-region-p)))
+		 (let ((bounds (bounds-of-thing-at-point 'symbol)))
+		   (if bounds
+			   (copy-region-as-kill (car bounds) (cdr bounds))
+			 (kill-ring-save begin end))))
+		(t
+		 (kill-ring-save begin end))))
 
 (defun jda-gf-get-find-exclusive-path-options ()
   (let (path-list path-option)
@@ -1261,6 +1283,10 @@ ex) make -C project/root/directory"
 		 :help "Highlight the symbol at current point with a idle timer"
 		 :style toggle
 		 :selected (timerp jda-highlight-symbol-timer)]
+		["jda-kill-ring-save" jda-kill-ring-save-toggle
+		 :help "Improved kill-ring-save"
+		 :style toggle
+		 :selected jda-kill-ring-save-is-set]
 		"----"
 		["Customize JDA" jda-customize
 		 :help "Customize jda-minor-mode"]
@@ -1294,6 +1320,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c M-|")		'align-regexp)
 	(define-key map (kbd "C-c j [")		'hs-minor-mode)
 	(define-key map (kbd "C-c j h")		'jda-highlight-symbol-run-toggle)
+	(define-key map (kbd "C-c j k")		'jda-kill-ring-save-toggle)
 	map))
 
 (defvar jda-minor-mode-map (jda-minor-keymap))
@@ -1326,6 +1353,7 @@ Key bindings:
 		 (add-hook 'rinari-minor-mode-hook 'jda-rinari-keymap)
 		 (add-hook 'isearch-mode-hook 'jda-mark-push-marker)
 		 (add-hook 'isearch-mode-end-hook 'jda-mark-push-marker)
+		 (define-key global-map (kbd "M-w") 'jda-kill-ring-save)
 		 (message "jda minor mode enabled"))
 		(t
 		 ;; finalize
@@ -1334,6 +1362,7 @@ Key bindings:
 		 (remove-hook 'isearch-mode-hook 'jda-mark-push-marker)
 		 (remove-hook 'isearch-mode-end-hook 'jda-mark-push-marker)
 		 (remove-hook 'emulation-mode-map-alists 'yas/direct-keymaps)
+		 (define-key global-map (kbd "M-w") 'kill-ring-save)
 		 (message "jda minor mode disabled"))))
 
 ;;;###autoload
