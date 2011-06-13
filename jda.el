@@ -309,15 +309,18 @@
 (defun jda-mark-push-marker ()
   (interactive)
   (setq jda-mark-ring-iterator -1)
-  (condition-case nil
-	  (if (ring-empty-p jda-mark-ring)
-		  (ring-insert jda-mark-ring (point-marker))
-		(let ((last-marker (ring-ref jda-mark-ring 0))
-			  (curr-marker (point-marker)))
-		  (cond ((not (equal last-marker curr-marker))
-				 (ring-insert jda-mark-ring curr-marker)
-				 (message "%s was saved" curr-marker)))))
-	(error nil)))
+  (let ((last-marker nil)
+		(curr-marker (point-marker)))
+	(condition-case nil
+		(cond ((ring-empty-p jda-mark-ring)
+			   (ring-insert jda-mark-ring curr-marker)
+			   (message "%s was saved" curr-marker))
+			  (t
+			   (setq last-marker (ring-ref jda-mark-ring 0))
+			   (cond ((not (equal last-marker curr-marker))
+					  (ring-insert jda-mark-ring curr-marker)
+					  (message "%s was saved" curr-marker)))))
+	  (error nil))))
 
 (defun jda-mark-prev ()
   (interactive)
