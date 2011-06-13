@@ -312,11 +312,11 @@
   (condition-case nil
 	  (if (ring-empty-p jda-mark-ring)
 		  (ring-insert jda-mark-ring (point-marker))
-		(let ((last-marker (ring-ref jda-mark-ring (car jda-mark-ring)))
+		(let ((last-marker (ring-ref jda-mark-ring 0))
 			  (curr-marker (point-marker)))
 		  (cond ((not (equal last-marker curr-marker))
 				 (ring-insert jda-mark-ring curr-marker)
-				 (message "The current marker was saved")))))
+				 (message "%s was saved" curr-marker)))))
 	(error nil)))
 
 (defun jda-mark-prev ()
@@ -330,18 +330,34 @@
 			 (prev-marker (ring-ref jda-mark-ring prev-iterator)))
 		(jda-mark-jump prev-marker)
 		(setq jda-mark-ring-iterator prev-iterator)
-		(message "jumped to previous marker"))
+		(message "Jumped to previous marker(%d/%d)"
+				 prev-iterator
+				 (ring-length jda-mark-ring)))
 	(error nil)))
 
 (defun jda-mark-next ()
   (interactive)
+  (cond ((equal jda-mark-ring-iterator -1)
+		 (message "Should run the command 'jda-mark-prev'"))
+		(t
+		 (condition-case nil
+			 (let* ((next-iterator (mod (1- jda-mark-ring-iterator)
+										(ring-length jda-mark-ring)))
+					(next-marker (ring-ref jda-mark-ring next-iterator)))
+			   (jda-mark-jump next-marker)
+			   (setq jda-mark-ring-iterator next-iterator)
+			   (message "Jumped to next marker(%d/%d)"
+						next-iterator
+						(ring-length jda-mark-ring)))
+		   (error nil)))))
+
+(defun jda-mark-finish-jump ()
+  (interactive)
+  (setq jda-mark-ring-iterator -1)
   (condition-case nil
-	  (let* ((next-iterator (mod (1- jda-mark-ring-iterator)
-			  					 (ring-length jda-mark-ring)))
-			 (next-marker (ring-ref jda-mark-ring next-iterator)))
-		(jda-mark-jump next-marker)
-		(setq jda-mark-ring-iterator next-iterator)
-		(message "jumped to next marker"))
+	  (progn
+		(jda-mark-jump (ring-ref jda-mark-ring 0))
+		(message "Finished jumping"))
 	(error nil)))
 
 ;;;; utility functions
@@ -1212,7 +1228,6 @@ ex) make -C project/root/directory"
 											  default-directory))))))
 
 (defun jda-rinari-keymap ()
-  (message "jda-rinari-keymap")
   (define-key rinari-minor-mode-map (kbd "C-c ; W") 'jda-rinari-web-server-debug)
   (define-key rinari-minor-mode-map (kbd "C-c ' W") 'jda-rinari-web-server-debug))
 
@@ -1259,6 +1274,8 @@ ex) make -C project/root/directory"
 		 :help "Goto the previous marker"]
 		["Goto Next Marker" jda-mark-next
 		 :help "Goto the next marker"]
+		["Finish Jumping Saved Markers" jda-mark-finish-jump
+		 :help "Finish jumping saved markers and Goto the last marker"]
 		["Push Current Marker" jda-mark-push-marker
 		 :help "Push the current marker"]
 		"---"
@@ -1315,6 +1332,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c j .")		'tags-apropos)
 	(define-key map (kbd "C-x ,")		'jda-mark-prev)
 	(define-key map (kbd "C-x .")		'jda-mark-next)
+	(define-key map (kbd "C-x /")		'jda-mark-finish-jump)
 	(define-key map (kbd "C-x <down>")	'jda-mark-push-marker)
 	(define-key map (kbd "C-c |")		'align)
 	(define-key map (kbd "C-c M-|")		'align-regexp)
