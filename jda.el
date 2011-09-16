@@ -596,7 +596,7 @@
 									   'jda-gf-symbol-history))
 	(setq compilation-finish-function 'jda-gf-select-grep-buffer)
 	(grep-find (jda-read-shell-command "Command: "
-									   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e \"\\<%s\\>\""
+									   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e '\\<%s\\>'"
 											   jda-gf-project-root
 											   (jda-gf-get-assoc-find-name-options)
 											   (jda-gf-get-find-exclusive-path-options)
@@ -619,7 +619,7 @@
 									   'jda-gf-symbol-history))
 	(setq compilation-finish-function 'jda-gf-select-grep-buffer)
 	(grep-find (jda-read-shell-command "Command: "
-									   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e \"%s\""
+									   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e '%s'"
 											   jda-gf-project-root
 											   (jda-gf-get-assoc-find-name-options)
 											   (jda-gf-get-find-exclusive-path-options)
@@ -739,7 +739,7 @@
 											 name-option)))
 	(setq command (jda-read-shell-command
 				   "Command: "
-				   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e \"%s\""
+				   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e '%s'"
 						   jda-gf-project-root
 						   name-option
 						   (jda-gf-get-find-exclusive-path-options)
