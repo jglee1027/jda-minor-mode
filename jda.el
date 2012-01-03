@@ -572,6 +572,13 @@
 							 jda-gf-project-root
 							 'jda-gf-project-root-history))
 
+(defun jda-gf-set-project-root-with-default-directory ()
+  "set a project root directory for grep-find"
+  (interactive)
+  (jda-set-default-directory "Project root: "
+							 default-directory
+							 'jda-gf-project-root-history))
+
 (defun jda-gf-select-grep-buffer (current-buffer msg)
   (condition-case nil
 	  (progn
@@ -1249,7 +1256,7 @@ ex) make -C project/root/directory"
 		["Open Counterpart File" jda-open-counterpart-file
 		 :help "Open a counterpart file(.h .c .cpp .m .mm)"]
 		"----"
-		["Set Project Root Directory..." jda-gf-set-project-root
+		["Set Project Root Directory..." jda-gf-set-project-root-with-default-directory
 		 :help "Set a project root directory"]
 		["Set Exclusive Path..." jda-gf-set-exclusive-path
 		 :help "Set exclusive paths in find command"]
@@ -1317,7 +1324,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c c")		'jda-build)
 	(define-key map (kbd "C-c h")		'jda-doc)
 	(define-key map (kbd "C-c j p")		'jda-open-counterpart-file)
-	(define-key map (kbd "C-c j r")		'jda-gf-set-project-root)
+	(define-key map (kbd "C-c j r")		'jda-gf-set-project-root-with-default-directory)
 	(define-key map (kbd "C-c j e")		'jda-gf-set-exclusive-path)
 	(define-key map (kbd "C-c j s")		'jda-gf-symbol-at-point)
 	(define-key map (kbd "C-c j S")		'jda-gf-text-at-point)
