@@ -1343,7 +1343,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-x ,")		'jda-mark-prev)
 	(define-key map (kbd "C-x .")		'jda-mark-next)
 	(define-key map (kbd "C-x /")		'jda-mark-finish-jump)
-	(define-key map (kbd "C-x <down>")	'jda-mark-push-marker)
+	(define-key map (kbd "C-x ?")		'jda-mark-push-marker)
 	(define-key map (kbd "C-c |")		'align)
 	(define-key map (kbd "C-c M-|")		'align-regexp)
 	(define-key map (kbd "C-c j [")		'hs-minor-mode)
