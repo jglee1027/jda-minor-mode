@@ -146,7 +146,7 @@
 (defvar jda-xcode-project-history nil)
 (defvar jda-xcode-build-history nil)
 
-(defvar jda-highlight-symbol-color 'menu)
+(defvar jda-highlight-symbol-color 'hi-blue)
 (defvar jda-highlight-symbol-timer-interval 0.7)
 (defvar jda-highlight-symbol-timer nil)
 (defvar jda-highlight-symbol-buffers-alist nil)
