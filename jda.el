@@ -575,9 +575,11 @@
 (defun jda-gf-set-project-root-with-default-directory ()
   "set a project root directory for grep-find"
   (interactive)
-  (jda-set-default-directory "Project root: "
-							 default-directory
-							 'jda-gf-project-root-history))
+  (let ((project-root nil))
+	(setq jda-gf-project-root
+		  (jda-set-default-directory "Project root: "
+									 project-root
+									 'jda-gf-project-root-history))))
 
 (defun jda-gf-select-grep-buffer (current-buffer msg)
   (condition-case nil
