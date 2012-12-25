@@ -724,7 +724,7 @@
 	
 	(message "Replaced %d occurrences" count)))
 
-(defun jda-gf-grep-query-replace (from to &optional delimited)
+(defun jda-gf-grep-query-replace-old (from to &optional delimited)
   (interactive
    (let ((common
 		  (query-replace-read-args
@@ -761,6 +761,69 @@
 	  (hi-lock-face-buffer from
 						   'match))
 	(jda-gf-grep-query-replace-ui from to)))
+
+;;;; dired-mode
+
+;; dired-aux.el
+;;;###autoload
+(defun dired-do-query-replace-regexp-jda (from to &optional delimited)
+  "Do `query-replace-regexp' of FROM with TO, on all marked files.
+Third arg DELIMITED (prefix arg) means replace only word-delimited matches.
+If you exit (\\[keyboard-quit], RET or q), you can resume the query replace
+with the command \\[tags-loop-continue]."
+  (interactive
+   (let ((common
+		  (query-replace-read-args
+		   "Query replace regexp in marked files" t t)))
+     (list (nth 0 common) (nth 1 common) (nth 2 common))))
+  (dolist (file (dired-get-marked-files nil nil 'dired-nondirectory-p))
+    (let ((buffer (get-file-buffer file)))
+      (if (and buffer (with-current-buffer buffer
+						buffer-read-only))
+		  (error "File `%s' is visited read-only" file))))
+
+  (beginning-of-buffer)
+  (dolist (file (dired-get-marked-files nil nil 'dired-nondirectory-p))
+	(pop-to-buffer "*Find*")
+	(dired-next-marked-file 1)
+	(hl-line-mode 1)
+	(find-file-other-window file)
+	(beginning-of-buffer)
+	(query-replace-regexp from to delimited)))
+
+(defun jda-dired-mode-keymap ()
+  (define-key dired-mode-map "%%" 'dired-do-query-replace-regexp-jda))
+
+(defun jda-gf-grep-query-replace (from to &optional delimited)
+  (interactive
+   (let ((common
+		  (query-replace-read-args
+		   "Query replace regexp in files" t t)))
+     (list (nth 0 common) (nth 1 common) (nth 2 common))))
+  
+  (jda-mark-push-marker)
+  (jda-gf-set-project-root)
+  (let (name-option
+		find-args
+		extension)
+	(cond ((null (buffer-file-name))
+		   (setq name-option ""))
+		  (t
+		   (setq extension (jda-current-file-name-extension))
+		   (setq name-option (cdr (assoc
+								   extension
+								   jda-gf-assoc-extension-alist)))))
+	(setq name-option (jda-gf-get-find-name-options
+					   (read-from-minibuffer "Find file: "
+											 name-option)))
+	(find-dired jda-gf-project-root
+				(concat "-type f " name-option
+						" -exec " grep-program " " find-grep-options " -e "
+						(shell-quote-argument from)
+						" "
+						(shell-quote-argument "{}")
+						" "
+						(shell-quote-argument ";")))))
 
 (defun jda-gf-find-file ()
   "search a file."
@@ -1383,6 +1446,7 @@ Key bindings:
 		 (add-hook 'rinari-minor-mode-hook 'jda-rinari-keymap)
 		 (add-hook 'isearch-mode-hook 'jda-mark-push-marker)
 		 (add-hook 'isearch-mode-end-hook 'jda-mark-push-marker)
+		 (add-hook 'dired-mode-hook 'jda-dired-mode-keymap)
 		 (define-key global-map (kbd "M-w") 'jda-kill-ring-save)
 		 (message "jda minor mode enabled"))
 		(t
@@ -1392,6 +1456,7 @@ Key bindings:
 		 (remove-hook 'isearch-mode-hook 'jda-mark-push-marker)
 		 (remove-hook 'isearch-mode-end-hook 'jda-mark-push-marker)
 		 (remove-hook 'emulation-mode-map-alists 'yas/direct-keymaps)
+		 (remove-hook 'dired-mode-hook 'jda-dired-mode-keymap)
 		 (define-key global-map (kbd "M-w") 'kill-ring-save)
 		 (message "jda minor mode disabled"))))
 
