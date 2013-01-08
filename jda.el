@@ -193,6 +193,12 @@
   :type 'string
   :group 'jda)
 
+(defcustom jda-compilation-buffer-name
+  "*compilation*"
+  "Compilation buffer name"
+  :type 'string
+  :group 'jda)
+
 ;;;; common functions
 
 (defun jda-icompleting-read (prompt choices)
@@ -580,6 +586,10 @@
 		  (jda-set-default-directory "Project root: "
 									 project-root
 									 'jda-gf-project-root-history))))
+
+(defun jda-pop-to-compilation-buffer ()
+  (interactive)
+  (pop-to-buffer jda-compilation-buffer-name))
 
 (defun jda-gf-select-grep-buffer (current-buffer msg)
   (condition-case nil
@@ -1400,6 +1410,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c i")		'jda-ido-find-file)
 	(define-key map (kbd "C-c I")		'jda-ido-find-file-reset-root)
 	(define-key map (kbd "C-c j m")		'jda-goto-symbol)
+	(define-key map (kbd "C-c j o")		'jda-pop-to-compilation-buffer)
 	(define-key map (kbd "C-c m")		'jda-goto-symbol)
 	(define-key map (kbd "C-c j 5")		'jda-gf-grep-query-replace)
 	(define-key map (kbd "C-c j %")		'jda-gf-find-query-replace)
