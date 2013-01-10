@@ -135,11 +135,16 @@
 (defvar jda-gf-grep-query-command-history nil)
 (defvar jda-gf-exclusive-path-history nil)
 (defvar jda-gf-grep-query-replace-buffers-alist nil)
+
 (defvar jda-ido-find-file-files-alist nil)
 (defvar jda-ido-find-file-files-alist-root nil)
+
 (defvar jda-mark-ring-max 20)
 (defvar jda-mark-ring (make-ring jda-mark-ring-max))
 (defvar jda-mark-ring-iterator -1)
+(defvar jda-mark-vector-max 10)
+(defvar jda-mark-vector (make-vector jda-mark-vector-max nil))
+
 (defvar jda-make-command-history nil)
 (defvar jda-xcode-doc-text-history nil)
 (defvar jda-xcode-sdk-history nil)
@@ -368,6 +373,36 @@
 		(jda-mark-jump (ring-ref jda-mark-ring 0))
 		(message "Finished jumping"))
 	(error nil)))
+
+(defun jda-mark-vector-message (mode)
+  (let ((message (format "Press key(0~9) to %s the current marker: (q for quit)\n\n" mode)))
+	(dotimes (i jda-mark-vector-max)
+	  (setq message (concat message
+							(format "[%d] - %s\n" i (elt jda-mark-vector i)))))
+	message))
+
+(defun jda-mark-vector-push ()
+  (interactive)
+  (let ((c ?n)
+		(curr-marker (point-marker)))
+	(while (and (not (char-equal c ?q))
+				(or (< c ?0) (> c ?9)))
+	  (setq c (read-char-exclusive (jda-mark-vector-message "save"))))
+	(cond ((and (>= c ?0) (<= c ?9))
+		   (let ((i (- c ?0)))
+			 (aset jda-mark-vector i curr-marker)
+			 (message (format "[%d] - %s was saved" i curr-marker)))))))
+
+(defun jda-mark-vector-pop ()
+  (interactive)
+  (let ((c ?n)
+		(curr-marker (point-marker)))
+	(while (and (not (char-equal c ?q))
+				(or (< c ?0) (> c ?9)))
+	  (setq c (read-char-exclusive (jda-mark-vector-message "restore"))))
+	(cond ((and (>= c ?0) (<= c ?9))
+		   (let ((i (- c ?0)))
+			 (jda-mark-jump (elt jda-mark-vector i)))))))
 
 ;;;; utility functions
 
@@ -1421,6 +1456,8 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-x .")		'jda-mark-next)
 	(define-key map (kbd "C-x /")		'jda-mark-finish-jump)
 	(define-key map (kbd "C-x ?")		'jda-mark-push-marker)
+	(define-key map (kbd "C-c p")		'jda-mark-vector-pop)
+	(define-key map (kbd "C-c P")		'jda-mark-vector-push)
 	(define-key map (kbd "C-c |")		'align)
 	(define-key map (kbd "C-c M-|")		'align-regexp)
 	(define-key map (kbd "C-c j [")		'hs-minor-mode)
