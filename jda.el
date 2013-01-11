@@ -813,6 +813,10 @@
 						   'match))
 	(jda-gf-grep-query-replace-ui from to)))
 
+(defun jda-buffer-file-name ()
+  (interactive)
+  (message (buffer-file-name)))
+
 ;;;; dired-mode
 
 ;; dired-aux.el
@@ -1469,6 +1473,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c j [")		'hs-minor-mode)
 	(define-key map (kbd "C-c j h")		'jda-highlight-symbol-run-toggle)
 	(define-key map (kbd "C-c j k")		'jda-kill-ring-save-toggle)
+	(define-key map (kbd "M-?")			'jda-buffer-file-name)
 	map))
 
 (defvar jda-minor-mode-map (jda-minor-keymap))
