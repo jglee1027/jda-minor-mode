@@ -108,6 +108,7 @@
 (require 'ido)
 (require 'hi-lock)
 (require 'thingatpt)
+(require 'dired-aux)
 
 (defgroup jda nil
   "Jong-Gyu Development Assistant"
