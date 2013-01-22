@@ -899,6 +899,21 @@ with the command \\[tags-loop-continue]."
 											   (jda-gf-get-find-name-options files))
 									   'jda-gf-find-file-command-history))))
 
+(defun jda-gf-find-file-dired ()
+  "search a file."
+  (interactive)
+  (jda-mark-push-marker)
+  (let (files)
+	(jda-gf-set-project-root)
+	(setq files (read-from-minibuffer "Find file: "
+									  nil
+									  nil
+									  nil
+									  'jda-gf-find-file-history))
+	(setq compilation-finish-function 'jda-gf-select-grep-buffer)
+	(find-dired jda-gf-project-root
+				(jda-gf-get-find-name-options files))))
+
 (defun jda-gf-get-query-replace-files ()
   (let ((files nil))
 	(with-current-buffer "*jda-query-replace*"
@@ -1450,6 +1465,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c j s")		'jda-gf-symbol-at-point)
 	(define-key map (kbd "C-c j S")		'jda-gf-text-at-point)
 	(define-key map (kbd "C-c j f")		'jda-gf-find-file)
+	(define-key map (kbd "C-c j F")		'jda-gf-find-file-dired)
 	(define-key map (kbd "C-c j i")		'jda-ido-find-file)
 	(define-key map (kbd "C-c j I")		'jda-ido-find-file-reset-root)
 	(define-key map (kbd "C-c i")		'jda-ido-find-file)
