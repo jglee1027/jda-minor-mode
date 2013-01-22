@@ -236,7 +236,7 @@
   `(progn (if (null ,initial-input)
 			  (setq ,initial-input default-directory))
 		  (setq ,initial-input
-				(file-name-as-directory
+				(directory-file-name
 				 (completing-read ,prompt
 								  'ffap-read-file-or-url-internal
 								  nil
@@ -1199,15 +1199,13 @@ with the command \\[tags-loop-continue]."
 										   (car xcodeprojs)
 										   'jda-xcode-project-history))))
 	;; build
-	(compile (read-from-minibuffer "Compile command: "
-								   (format "cd %s && %s -sdk %s -project %s"
-										   (jda-get-super-directory xcodeproj)
-										   jda-xcodebuild-command
-										   sdk
-										   (file-name-nondirectory xcodeproj))
-								   nil
-								   nil
-								   'jda-xcode-build-history))))
+	(compile (jda-read-shell-command "Compile command: "
+									 (format "cd %s && %s -sdk %s -project %s"
+											 (jda-get-super-directory xcodeproj)
+											 jda-xcodebuild-command
+											 sdk
+											 (file-name-nondirectory xcodeproj))
+									 'jda-xcode-build-history))))
 ;;;; make
 
 (defun jda-get-makefile-dir ()
@@ -1233,14 +1231,11 @@ ex) make -C project/root/directory"
   (let (compile-string makefile-dir)
 	(setq makefile-dir (jda-get-makefile-dir))
 	(if (equal makefile-dir "")
-		(setq compile-string "make ")
+		(setq compile-string "make -C ")
 	  (setq compile-string (format "make -C %s " makefile-dir)))
-	(setq compile-string (read-from-minibuffer "Compile command: "
-											   compile-string
-											   nil
-											   nil
-											   'jda-make-command-history))
-	(compile compile-string)))
+	(compile (jda-read-shell-command "Compile command: "
+									compile-string
+									'jda-make-command-history))))
 
 (defun jda-build ()
   "Build a project after finding Xcode project(.xcodeproj) or Makefile"
