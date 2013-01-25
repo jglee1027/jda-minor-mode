@@ -975,7 +975,7 @@ with the command \\[tags-loop-continue]."
 							 jda-create-tags-directory
 							 'jda-create-tags-directory-history)
   (shell-command (jda-read-shell-command "Command: "
-										 (format "find -L %s -type f %s %s -print | etags - -o %sTAGS"
+										 (format "find -L %s -type f %s %s -print | etags - -o %s/TAGS"
 												 jda-create-tags-directory
 												 (jda-gf-get-assoc-find-name-options)
 												 (jda-gf-get-find-exclusive-path-options)
