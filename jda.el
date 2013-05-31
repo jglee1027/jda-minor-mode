@@ -182,7 +182,7 @@
   :group 'jda)
 
 (defcustom jda-android-sdk-dir
-  "~/android/android-sdk-linux_86"
+  "~/sdk/android-sdk-linux_86"
   "Android SDK directory"
   :type 'directory
   :group 'jda)
@@ -1279,7 +1279,8 @@ ex) make -C project/root/directory"
 	(require 'anything))
   (cond ((equal mode-name "ObjC/l")
 		 (jda-xcode-doc))
-		((equal mode-name "JDE")
+		((or (equal mode-name "JDE")
+			 (equal mode-name "Java/l"))
 		 (jda-android-doc))))
 
 ;;;; objc
