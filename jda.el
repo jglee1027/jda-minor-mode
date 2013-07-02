@@ -207,6 +207,12 @@
 
 ;;;; common functions
 
+(defun chomp (str)
+  "Chomp leading and tailing whitespace from STR."
+  (while (string-match "\\`\n+\\|^\\s-+\\|\\s-+$\\|\n+\\'" str)
+	(setq str (replace-match "" t t str)))
+  str)
+
 (defun jda-icompleting-read (prompt choices)
   (let ((iswitchb-make-buflist-hook
          (lambda ()
@@ -288,7 +294,9 @@
 		(t
 		 (unless hi-lock-mode (hi-lock-mode 1))
 		 (setq jda-highlight-symbol-timer
-			   (run-with-idle-timer jda-highlight-symbol-timer-interval t 'jda-highlight-symbol-callback))
+			   (run-with-idle-timer jda-highlight-symbol-timer-interval
+									t
+									'jda-highlight-symbol-callback))
 		 (message "jda-highlight-symbol on."))))
 
 ;;;; jda-mark
@@ -318,7 +326,7 @@
    (t
 	(error "marker doesn't contain a buffer position or configuration"))))
 
-(defun jda-mark-push-marker ()
+(defun jda-mark-push-marker (&optional use-jda-mark-list)
   (interactive)
   (setq jda-mark-ring-iterator -1)
   (let ((last-marker nil)
@@ -326,12 +334,14 @@
 	(condition-case nil
 		(cond ((ring-empty-p jda-mark-ring)
 			   (ring-insert jda-mark-ring curr-marker)
-			   (message "%s was saved" curr-marker))
+			   (if use-jda-mark-list
+				   (jda-mark-list)))
 			  (t
 			   (setq last-marker (ring-ref jda-mark-ring 0))
 			   (cond ((not (equal last-marker curr-marker))
 					  (ring-insert jda-mark-ring curr-marker)
-					  (message "%s was saved" curr-marker)))))
+					  (if use-jda-mark-list
+						  (jda-mark-list))))))
 	  (error nil))))
 
 (defun jda-mark-prev ()
@@ -345,9 +355,7 @@
 			 (prev-marker (ring-ref jda-mark-ring prev-iterator)))
 		(jda-mark-jump prev-marker)
 		(setq jda-mark-ring-iterator prev-iterator)
-		(message "Jumped to previous marker(%d/%d)"
-				 prev-iterator
-				 (ring-length jda-mark-ring)))
+		(jda-mark-list))
 	(error nil)))
 
 (defun jda-mark-next ()
@@ -361,10 +369,48 @@
 					(next-marker (ring-ref jda-mark-ring next-iterator)))
 			   (jda-mark-jump next-marker)
 			   (setq jda-mark-ring-iterator next-iterator)
-			   (message "Jumped to next marker(%d/%d)"
-						next-iterator
-						(ring-length jda-mark-ring)))
+			   (jda-mark-list))
 		   (error nil)))))
+
+(defun jda-mark-list-line (marker)
+  (interactive)
+  (cond ((marker-buffer marker)
+		 (save-excursion
+		   (with-current-buffer (marker-buffer marker)
+			 (goto-char marker)
+			 (let (begin end str)
+			   (beginning-of-line)
+			   (setq begin (point))
+			   (end-of-line)
+			   (setq end (point))
+			   (setq str (buffer-substring begin end))
+			   (chomp str)
+			   (if (> (length str) 5)
+				   str
+				 marker)))))
+		(t
+		 marker)))
+
+(defun jda-mark-list-message ()
+  (let ((message "Marker list(push: C-x ?, prev: C-x <, next: C-x >, last: C-x /)\n\n")
+		(length (ring-length jda-mark-ring)))
+	(dotimes (i length)
+	  (setq message (concat message
+							(format "%s[%d] %s\n"
+									(if (equal i jda-mark-ring-iterator)
+										"=>"
+									  "  ")
+									i
+									(jda-mark-list-line (ring-ref jda-mark-ring i))))))
+	message))
+
+(defun jda-mark-list ()
+  (interactive)
+  (let ((length (ring-length jda-mark-ring)))
+	(setq max-mini-window-height (+ length 3))
+	(message (jda-mark-list-message))
+	(sleep-for 1)
+	(setq max-mini-window-height 0.25)))
 
 (defun jda-mark-finish-jump ()
   (interactive)
@@ -372,7 +418,7 @@
   (condition-case nil
 	  (progn
 		(jda-mark-jump (ring-ref jda-mark-ring 0))
-		(message "Finished jumping"))
+		(jda-mark-list))
 	(error nil)))
 
 (defun jda-mark-vector-message (mode)
@@ -1082,7 +1128,7 @@ with the command \\[tags-loop-continue]."
   (interactive)
   (jda-mark-push-marker)
   (jda-ido-goto-symbol)
-  (jda-mark-push-marker))
+  (jda-mark-push-marker t))
 
 (defun jda-ido-find-file ()
   (interactive)
@@ -1478,7 +1524,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-x ,")		'jda-mark-prev)
 	(define-key map (kbd "C-x .")		'jda-mark-next)
 	(define-key map (kbd "C-x /")		'jda-mark-finish-jump)
-	(define-key map (kbd "C-x ?")		'jda-mark-push-marker)
+	(define-key map (kbd "C-x ?")		'(lambda() (interactive) (jda-mark-push-marker t)))
 	(define-key map (kbd "C-c p")		'jda-mark-vector-pop)
 	(define-key map (kbd "C-c P")		'jda-mark-vector-push)
 	(define-key map (kbd "C-c |")		'align)
