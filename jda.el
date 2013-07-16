@@ -679,6 +679,11 @@
   (interactive)
   (pop-to-buffer jda-compilation-buffer-name))
 
+(defun jda-pop-to-compilation-buffer-fill ()
+  (interactive)
+  (pop-to-buffer jda-compilation-buffer-name)
+  (delete-other-windows))
+
 (defun jda-gf-select-grep-buffer (current-buffer msg)
   (condition-case nil
 	  (progn
@@ -1515,6 +1520,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c I")		'jda-ido-find-file-reset-root)
 	(define-key map (kbd "C-c j m")		'jda-goto-symbol)
 	(define-key map (kbd "C-c j o")		'jda-pop-to-compilation-buffer)
+	(define-key map (kbd "C-c j O")		'jda-pop-to-compilation-buffer-fill)
 	(define-key map (kbd "C-c m")		'jda-goto-symbol)
 	(define-key map (kbd "C-c j 5")		'jda-gf-grep-query-replace)
 	(define-key map (kbd "C-c j %")		'jda-gf-find-query-replace)
