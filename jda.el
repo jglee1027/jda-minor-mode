@@ -632,23 +632,18 @@
 		  (setq name-option (concat name-option " -o " (pop name-list))))
 		(setq name-option (concat "\\( " name-option " \\)"))))))
 
-(defun jda-gf-get-assoc-find-name-options ()
+(defun jda-gf-get-assoc-find-name-options (&optional force-read)
   (let (name-option name-list extension assoc-extensions)
-	(cond ((null (buffer-file-name))
-		   (setq name-option (jda-gf-get-find-name-options
-							  (read-from-minibuffer "Find file: "))))
-		  (t
+	(cond ((or (setq extension (jda-current-file-name-extension))
+			   force-read)
 		   (setq extension (jda-current-file-name-extension))
 		   (setq assoc-extensions (cdr (assoc extension jda-gf-assoc-extension-alist)))
-		   (cond (assoc-extensions
-				  (setq name-list (mapcar (lambda (x) (format "-name '%s'" x))
-										  (split-string assoc-extensions)))
-				  (setq name-option (pop name-list))
-				  (while name-list
-					(setq name-option (concat name-option " -o " (pop name-list))))
-				  (setq name-option (concat "\\( " name-option " \\)")))
-				 (t
-				  (setq name-option "")))))))
+		   (if force-read
+			   (setq assoc-extensions (read-from-minibuffer "Find file: " assoc-extensions)))
+		   (setq name-option (jda-gf-get-find-name-options assoc-extensions)))
+		  (t
+		   (setq name-option (jda-gf-get-find-name-options
+							  (read-from-minibuffer "Find file: ")))))))
 
 (defun jda-gf-set-exclusive-path ()
   (interactive)
@@ -724,7 +719,7 @@
 	(setq symbol (symbol-at-point))
 	(if (null symbol)
 		(setq symbol ""))
-	(setq symbol (read-from-minibuffer "Find symbol: "
+	(setq symbol (read-from-minibuffer "Find text: "
 									   (format "%s" symbol)
 									   nil
 									   nil
@@ -733,7 +728,7 @@
 	(grep-find (jda-read-shell-command "Command: "
 									   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e '%s'"
 											   jda-gf-project-root
-											   (jda-gf-get-assoc-find-name-options)
+											   (jda-gf-get-assoc-find-name-options t)
 											   (jda-gf-get-find-exclusive-path-options)
 											   symbol)
 									   'jda-gf-symbol-command-history))))
