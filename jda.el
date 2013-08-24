@@ -632,18 +632,12 @@
 		  (setq name-option (concat name-option " -o " (pop name-list))))
 		(setq name-option (concat "\\( " name-option " \\)"))))))
 
-(defun jda-gf-get-assoc-find-name-options (&optional force-read)
-  (let (name-option name-list extension assoc-extensions)
-	(cond ((or (setq extension (jda-current-file-name-extension))
-			   force-read)
-		   (setq extension (jda-current-file-name-extension))
-		   (setq assoc-extensions (cdr (assoc extension jda-gf-assoc-extension-alist)))
-		   (if force-read
-			   (setq assoc-extensions (read-from-minibuffer "Find file: " assoc-extensions)))
-		   (setq name-option (jda-gf-get-find-name-options assoc-extensions)))
-		  (t
-		   (setq name-option (jda-gf-get-find-name-options
-							  (read-from-minibuffer "Find file: ")))))))
+(defun jda-gf-get-assoc-find-name-options ()
+  (let (extension assoc-extensions)
+	(setq extension (jda-current-file-name-extension))
+	(setq assoc-extensions (cdr (assoc extension jda-gf-assoc-extension-alist)))
+	(setq assoc-extensions (read-from-minibuffer "Files: " assoc-extensions))
+	(jda-gf-get-find-name-options assoc-extensions)))
 
 (defun jda-gf-set-exclusive-path ()
   (interactive)
@@ -728,7 +722,7 @@
 	(grep-find (jda-read-shell-command "Command: "
 									   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e '%s'"
 											   jda-gf-project-root
-											   (jda-gf-get-assoc-find-name-options t)
+											   (jda-gf-get-assoc-find-name-options)
 											   (jda-gf-get-find-exclusive-path-options)
 											   symbol)
 									   'jda-gf-symbol-command-history))))
