@@ -344,6 +344,10 @@
 						  (jda-mark-list))))))
 	  (error nil))))
 
+(defun jda-mark-push-marker-menu
+  (interactive)
+  (jda-mark-push-marker t))
+
 (defun jda-mark-prev ()
   (interactive)
   (cond ((equal jda-mark-ring-iterator -1)
@@ -1461,8 +1465,13 @@ ex) make -C project/root/directory"
 		 :help "Goto the next marker"]
 		["Finish Jumping Saved Markers" jda-mark-finish-jump
 		 :help "Finish jumping saved markers and Goto the last marker"]
-		["Push Current Marker" jda-mark-push-marker
+		["Push Current Marker" jda-mark-push-marker-menu
 		 :help "Push the current marker"]
+		"---"
+		["Save Current Marker to Mini Bookmark" jda-mark-vector-push
+		 :help "Save current marker to Mini Bookmark"]
+		["Jump the Marker in Mini Bookmark" jda-mark-vector-pop
+		 :help "Jump the marker in Mini Bookmark"]
 		"---"
 		("Objective-C"
 		 ["Insert ']'" jda-insert-objc-parenthesis
@@ -1521,7 +1530,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-x ,")		'jda-mark-prev)
 	(define-key map (kbd "C-x .")		'jda-mark-next)
 	(define-key map (kbd "C-x /")		'jda-mark-finish-jump)
-	(define-key map (kbd "C-x ?")		'(lambda() (interactive) (jda-mark-push-marker t)))
+	(define-key map (kbd "C-x ?")		'jda-mark-push-marker-menu)
 	(define-key map (kbd "C-c p")		'jda-mark-vector-pop)
 	(define-key map (kbd "C-c P")		'jda-mark-vector-push)
 	(define-key map (kbd "C-c |")		'align)
