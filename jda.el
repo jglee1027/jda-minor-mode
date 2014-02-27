@@ -344,7 +344,7 @@
 						  (jda-mark-list))))))
 	  (error nil))))
 
-(defun jda-mark-push-marker-menu
+(defun jda-mark-push-marker-menu ()
   (interactive)
   (jda-mark-push-marker t))
 
