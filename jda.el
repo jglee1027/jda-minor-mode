@@ -1028,6 +1028,11 @@ with the command \\[tags-loop-continue]."
 										 'jda-create-tags-command-history)
 				 "*jda-create-tag*"))
 
+(defun jda-create-tags-in-default-directory ()
+  (interactive)
+  (setq jda-create-tags-directory default-directory)
+  (jda-create-tags))
+
 (defun jda-etags-make-tag-info-alist (file)
   (goto-char (point-min))
   (when (re-search-forward (concat "\f\n" "\\(" file "\\)" ",") nil t)
@@ -1455,6 +1460,8 @@ ex) make -C project/root/directory"
 		"----"
 		["Create TAGS..." jda-create-tags
 		 :help "Create TAGS file"]
+		["Create TAGS in default-directory..." jda-create-tags-in-default-directory
+		 :help "Create TAGS file in default-directory"]
 		["Visit TAGS..." visit-tags-table
 		 :help "Visit a TAGS table file"]
 		["Display All Tags Regexp Matches..." tags-apropos
@@ -1525,6 +1532,7 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c m")		'jda-goto-symbol)
 	(define-key map (kbd "C-c j 5")		'jda-gf-grep-query-replace)
 	(define-key map (kbd "C-c j %")		'jda-gf-find-query-replace)
+	(define-key map (kbd "C-c j T")		'jda-create-tags-in-default-directory)
 	(define-key map (kbd "C-c j t")		'jda-create-tags)
 	(define-key map (kbd "C-c j v")		'visit-tags-table)
 	(define-key map (kbd "C-c j .")		'tags-apropos)
