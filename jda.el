@@ -70,7 +70,7 @@
 ;;    If you want to find a symbol in your project, press "C-c j s".
 ;;    After finding it, you can easily navigate the symbols by pressing
 ;;    "M-g p" or "M-g n".
-   
+
 ;; ** Go to a symbol in the current buffer
 ;;    Press "C-c j m" or "C-c m" if you want to go to a function. You can
 ;;    see all functions defined in the current buffer. It supports
@@ -84,17 +84,17 @@
 ;; ** Create a TAG in your project
 ;;    Press "C-c j t" and you can easily create TAG file in your project
 ;;    using 'find' and 'etags'.
-   
+
 ;; ** Go to previous or next marker
 ;;    Press "C-c ," to go to the previous marker and Press "C-c ." to go
 ;;    to the next marker.
 ;;    Press "C-x <down>" to save the current marker.
-   
+
 ;; ** Highlight symbol
 ;;    If you want to see highlighted symbol at point, press "C-c j h".
 ;;    After specified idle time, the current symbol at point is
 ;;    highlighted.  It only works in file buffer.
-   
+
 ;; ** Insert or Delete a bracket in Objective-C mode
 ;;    Press "C-c ]" to insert a right bracket to pair.
 ;;    Press "C-c [" to delete left and right brackets to pair.
@@ -384,9 +384,10 @@
   (jda-mark-next)
   (jda-mark-list))
 
-(defun jda-mark-list-line (marker)
+(defun jda-mark-get-line-string (marker)
   (interactive)
-  (cond ((marker-buffer marker)
+  (cond ((and (markerp marker)
+			  (marker-buffer marker))
 		 (save-excursion
 		   (with-current-buffer (marker-buffer marker)
 			 (goto-char marker)
@@ -406,7 +407,7 @@
 (defun jda-mark-list-message ()
   (let* ((length (ring-length jda-mark-ring))
 		 (message (format "Marker list(push: C-x ?, prev: \"C-x ,\", next: \"C-x .\", last: C-x /, jump: a~%c)\n\n"
-						  (- (+ ?a length) 1)))
+						  (+ ?a (- length 1))))
 		 marker)
 	(dotimes (i length)
 	  (setq marker (ring-ref jda-mark-ring i))
@@ -417,7 +418,7 @@
 									  "  ")
 									(+ ?a i)
 									marker
-									(jda-mark-list-line marker)))))
+									(jda-mark-get-line-string marker)))))
 	message))
 
 (defun jda-mark-list ()
@@ -451,40 +452,47 @@
 	(error nil)))
 
 (defun jda-mark-vector-message (mode)
-  (let ((message (format "Press key(0~9) to %s the current marker: (q for quit)\n\n" mode)))
+  (let ((message (format "Press key(a~%c) to %s the current marker:\n\n"
+						 (+ ?a (- jda-mark-vector-max 1))
+						 mode))
+		marker)
 	(dotimes (i jda-mark-vector-max)
+	  (setq marker (elt jda-mark-vector i))
 	  (setq message (concat message
-							(format "[%d] - %s\n" i (elt jda-mark-vector i)))))
+							(format " [%c] %s:%s\n"
+									(+ ?a i)
+									marker
+									(jda-mark-get-line-string marker)))))
 	message))
 
 (defun jda-mark-vector-push ()
   (interactive)
-  (let ((c ?n)
+  (let ((c ?/)
 		(max-mini-window-height-old max-mini-window-height)
-		(curr-marker (point-marker)))
-	(while (and (not (char-equal c ?q))
-				(or (< c ?0) (> c ?9)))
+		(curr-marker (point-marker))
+		i)
+	(while (or (< c ?a) (> c (+ ?a (- jda-mark-vector-max 1))))
 	  (setq max-mini-window-height (+ jda-mark-vector-max 3))
 	  (setq c (read-char-exclusive (jda-mark-vector-message "save"))))
+	(setq i (- c ?a))
 	(setq max-mini-window-height max-mini-window-height-old)
-	(cond ((and (>= c ?0) (<= c ?9))
-		   (let ((i (- c ?0)))
-			 (aset jda-mark-vector i curr-marker)
-			 (message (format "[%d] - %s was saved" i curr-marker)))))))
+	(cond ((and (>= i 0) (<= i jda-mark-vector-max))
+		   (aset jda-mark-vector i curr-marker)
+		   (message (format "[%c] %s was saved" c curr-marker))))))
 
 (defun jda-mark-vector-pop ()
   (interactive)
-  (let ((c ?n)
+  (let ((c ?/)
 		(max-mini-window-height-old max-mini-window-height)
-		(curr-marker (point-marker)))
-	(while (and (not (char-equal c ?q))
-				(or (< c ?0) (> c ?9)))
+		(curr-marker (point-marker))
+		i)
+	(while (or (< c ?a) (> c (+ ?a (- jda-mark-vector-max 1))))
 	  (setq max-mini-window-height (+ jda-mark-vector-max 3))
 	  (setq c (read-char-exclusive (jda-mark-vector-message "restore"))))
+	(setq i (- c ?a))
 	(setq max-mini-window-height max-mini-window-height-old)
-	(cond ((and (>= c ?0) (<= c ?9))
-		   (let ((i (- c ?0)))
-			 (jda-mark-jump (elt jda-mark-vector i)))))))
+	(cond ((and (>= i 0) (<= i jda-mark-vector-max))
+		   (jda-mark-jump (elt jda-mark-vector i))))))
 
 ;;;; utility functions
 
@@ -1309,8 +1317,8 @@ ex) make -C project/root/directory"
 		(setq compile-string "make -C ")
 	  (setq compile-string (format "make -C %s " makefile-dir)))
 	(compile (jda-read-shell-command "Compile command: "
-									compile-string
-									'jda-make-command-history))))
+									 compile-string
+									 'jda-make-command-history))))
 
 (defun jda-build ()
   "Build a project after finding Xcode project(.xcodeproj) or Makefile"
