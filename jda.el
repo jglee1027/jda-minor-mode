@@ -358,9 +358,13 @@
 								 (ring-length jda-mark-ring)))
 			 (prev-marker (ring-ref jda-mark-ring prev-iterator)))
 		(jda-mark-jump prev-marker)
-		(setq jda-mark-ring-iterator prev-iterator)
-		(jda-mark-list))
+		(setq jda-mark-ring-iterator prev-iterator))
 	(error nil)))
+
+(defun jda-mark-prev-ui ()
+  (interactive)
+  (jda-mark-prev)
+  (jda-mark-list))
 
 (defun jda-mark-next ()
   (interactive)
@@ -372,9 +376,13 @@
 										(ring-length jda-mark-ring)))
 					(next-marker (ring-ref jda-mark-ring next-iterator)))
 			   (jda-mark-jump next-marker)
-			   (setq jda-mark-ring-iterator next-iterator)
-			   (jda-mark-list))
+			   (setq jda-mark-ring-iterator next-iterator))
 		   (error nil)))))
+
+(defun jda-mark-next-ui ()
+  (interactive)
+  (jda-mark-next)
+  (jda-mark-list))
 
 (defun jda-mark-list-line (marker)
   (interactive)
@@ -396,27 +404,41 @@
 		 marker)))
 
 (defun jda-mark-list-message ()
-  (let ((message "Marker list(push: C-x ?, prev: C-x <, next: C-x >, last: C-x /)\n\n")
-		(length (ring-length jda-mark-ring))
-		marker)
+  (let* ((length (ring-length jda-mark-ring))
+		 (message (format "Marker list(push: C-x ?, prev: \"C-x ,\", next: \"C-x .\", last: C-x /, jump: a~%c)\n\n"
+						  (- (+ ?a length) 1)))
+		 marker)
 	(dotimes (i length)
 	  (setq marker (ring-ref jda-mark-ring i))
 	  (setq message (concat message
-							(format "%s[%d] %s:%s\n"
+							(format "%s[%c] %s:%s\n"
 									(if (equal i jda-mark-ring-iterator)
 										"=>"
 									  "  ")
-									i
+									(+ ?a i)
 									marker
 									(jda-mark-list-line marker)))))
 	message))
 
 (defun jda-mark-list ()
   (interactive)
-  (let ((length (ring-length jda-mark-ring)))
+  (let ((length (ring-length jda-mark-ring))
+		index
+		(c ?,))
 	(setq max-mini-window-height (+ length 3))
-	(message (jda-mark-list-message))
-	(sleep-for 1)
+	(while (or (char-equal c ?,)
+			   (char-equal c ?.))
+	  (message (jda-mark-list-message))
+	  (setq c (read-char))
+	  (cond ((char-equal c ?,)
+			 (jda-mark-prev))
+			((char-equal c ?.)
+			 (jda-mark-next))))
+	(setq index (- c ?a))
+	(if (and (>= index 0)
+			 (< index length))
+		(jda-mark-jump (ring-ref jda-mark-ring index))
+	  (beep))
 	(setq max-mini-window-height 0.25)))
 
 (defun jda-mark-finish-jump ()
@@ -1470,9 +1492,9 @@ ex) make -C project/root/directory"
 		["Display All Tags Regexp Matches..." tags-apropos
 		 :help "Display list of all tags in tags table REGEXP magtches"]
 		"----"
-		["Goto Previous Marker" jda-mark-prev
+		["Goto Previous Marker" jda-mark-prev-ui
 		 :help "Goto the previous marker"]
-		["Goto Next Marker" jda-mark-next
+		["Goto Next Marker" jda-mark-next-ui
 		 :help "Goto the next marker"]
 		["Finish Jumping Saved Markers" jda-mark-finish-jump
 		 :help "Finish jumping saved markers and Goto the last marker"]
@@ -1539,8 +1561,8 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c j t")		'jda-create-tags)
 	(define-key map (kbd "C-c j v")		'visit-tags-table)
 	(define-key map (kbd "C-c j .")		'tags-apropos)
-	(define-key map (kbd "C-x ,")		'jda-mark-prev)
-	(define-key map (kbd "C-x .")		'jda-mark-next)
+	(define-key map (kbd "C-x ,")		'jda-mark-prev-ui)
+	(define-key map (kbd "C-x .")		'jda-mark-next-ui)
 	(define-key map (kbd "C-x /")		'jda-mark-finish-jump)
 	(define-key map (kbd "C-x ?")		'jda-mark-push-marker-menu)
 	(define-key map (kbd "C-c p")		'jda-mark-vector-pop)
