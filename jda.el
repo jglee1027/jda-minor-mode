@@ -397,15 +397,18 @@
 
 (defun jda-mark-list-message ()
   (let ((message "Marker list(push: C-x ?, prev: C-x <, next: C-x >, last: C-x /)\n\n")
-		(length (ring-length jda-mark-ring)))
+		(length (ring-length jda-mark-ring))
+		marker)
 	(dotimes (i length)
+	  (setq marker (ring-ref jda-mark-ring i))
 	  (setq message (concat message
-							(format "%s[%d] %s\n"
+							(format "%s[%d] %s:%s\n"
 									(if (equal i jda-mark-ring-iterator)
 										"=>"
 									  "  ")
 									i
-									(jda-mark-list-line (ring-ref jda-mark-ring i))))))
+									marker
+									(jda-mark-list-line marker)))))
 	message))
 
 (defun jda-mark-list ()
