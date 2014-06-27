@@ -140,11 +140,11 @@
 (defvar jda-ido-find-file-files-alist nil)
 (defvar jda-ido-find-file-files-alist-root nil)
 
-(defvar jda-mark-ring-max 20)
-(defvar jda-mark-ring (make-ring jda-mark-ring-max))
-(defvar jda-mark-ring-iterator -1)
-(defvar jda-mark-vector-max 10)
-(defvar jda-mark-vector (make-vector jda-mark-vector-max nil))
+(defvar jda-marker-ring-max 20)
+(defvar jda-marker-ring (make-ring jda-marker-ring-max))
+(defvar jda-marker-ring-iterator -1)
+(defvar jda-marker-vector-max 10)
+(defvar jda-marker-vector (make-vector jda-marker-vector-max nil))
 
 (defvar jda-make-command-history nil)
 (defvar jda-xcode-doc-text-history nil)
@@ -299,10 +299,10 @@
 									'jda-highlight-symbol-callback))
 		 (message "jda-highlight-symbol on."))))
 
-;;;; jda-mark
+;;;; jda-marker
 
 ;; jump-to-register in register.el
-(defun jda-mark-jump (marker)
+(defun jda-marker-jump (marker)
   (cond
    ((and (consp marker) (frame-configuration-p (car marker)))
 	(set-frame-configuration (car marker) (not delete))
@@ -326,65 +326,65 @@
    (t
 	(error "marker doesn't contain a buffer position or configuration"))))
 
-(defun jda-mark-push-marker (&optional use-jda-mark-list)
+(defun jda-marker-push-marker (&optional use-jda-marker-list)
   (interactive)
-  (setq jda-mark-ring-iterator -1)
+  (setq jda-marker-ring-iterator -1)
   (let ((last-marker nil)
 		(curr-marker (point-marker)))
 	(condition-case nil
-		(cond ((ring-empty-p jda-mark-ring)
-			   (ring-insert jda-mark-ring curr-marker)
-			   (if use-jda-mark-list
-				   (jda-mark-list)))
+		(cond ((ring-empty-p jda-marker-ring)
+			   (ring-insert jda-marker-ring curr-marker)
+			   (if use-jda-marker-list
+				   (jda-marker-list)))
 			  (t
-			   (setq last-marker (ring-ref jda-mark-ring 0))
+			   (setq last-marker (ring-ref jda-marker-ring 0))
 			   (cond ((not (equal last-marker curr-marker))
-					  (ring-insert jda-mark-ring curr-marker)
-					  (if use-jda-mark-list
-						  (jda-mark-list))))))
+					  (ring-insert jda-marker-ring curr-marker)
+					  (if use-jda-marker-list
+						  (jda-marker-list))))))
 	  (error nil))))
 
-(defun jda-mark-push-marker-menu ()
+(defun jda-marker-push-marker-menu ()
   (interactive)
-  (jda-mark-push-marker t))
+  (jda-marker-push-marker t))
 
-(defun jda-mark-prev ()
+(defun jda-marker-prev ()
   (interactive)
-  (cond ((equal jda-mark-ring-iterator -1)
-		 (jda-mark-push-marker)
-		 (setq jda-mark-ring-iterator 0)))
+  (cond ((equal jda-marker-ring-iterator -1)
+		 (jda-marker-push-marker)
+		 (setq jda-marker-ring-iterator 0)))
   (condition-case nil
-	  (let* ((prev-iterator (mod (1+ jda-mark-ring-iterator)
-								 (ring-length jda-mark-ring)))
-			 (prev-marker (ring-ref jda-mark-ring prev-iterator)))
-		(jda-mark-jump prev-marker)
-		(setq jda-mark-ring-iterator prev-iterator))
+	  (let* ((prev-iterator (mod (1+ jda-marker-ring-iterator)
+								 (ring-length jda-marker-ring)))
+			 (prev-marker (ring-ref jda-marker-ring prev-iterator)))
+		(jda-marker-jump prev-marker)
+		(setq jda-marker-ring-iterator prev-iterator))
 	(error nil)))
 
-(defun jda-mark-prev-ui ()
+(defun jda-marker-prev-ui ()
   (interactive)
-  (jda-mark-prev)
-  (jda-mark-list))
+  (jda-marker-prev)
+  (jda-marker-list))
 
-(defun jda-mark-next ()
+(defun jda-marker-next ()
   (interactive)
-  (cond ((equal jda-mark-ring-iterator -1)
-		 (message "Should run the command 'jda-mark-prev'"))
+  (cond ((equal jda-marker-ring-iterator -1)
+		 (message "Should run the command 'jda-marker-prev'"))
 		(t
 		 (condition-case nil
-			 (let* ((next-iterator (mod (1- jda-mark-ring-iterator)
-										(ring-length jda-mark-ring)))
-					(next-marker (ring-ref jda-mark-ring next-iterator)))
-			   (jda-mark-jump next-marker)
-			   (setq jda-mark-ring-iterator next-iterator))
+			 (let* ((next-iterator (mod (1- jda-marker-ring-iterator)
+										(ring-length jda-marker-ring)))
+					(next-marker (ring-ref jda-marker-ring next-iterator)))
+			   (jda-marker-jump next-marker)
+			   (setq jda-marker-ring-iterator next-iterator))
 		   (error nil)))))
 
-(defun jda-mark-next-ui ()
+(defun jda-marker-next-ui ()
   (interactive)
-  (jda-mark-next)
-  (jda-mark-list))
+  (jda-marker-next)
+  (jda-marker-list))
 
-(defun jda-mark-get-line-string (marker)
+(defun jda-marker-get-line-string (marker)
   (interactive)
   (cond ((and (markerp marker)
 			  (marker-buffer marker))
@@ -404,95 +404,95 @@
 		(t
 		 marker)))
 
-(defun jda-mark-list-message ()
-  (let* ((length (ring-length jda-mark-ring))
+(defun jda-marker-list-message ()
+  (let* ((length (ring-length jda-marker-ring))
 		 (message (format "Marker list(push: C-x ?, prev: \"C-x ,\", next: \"C-x .\", last: C-x /, jump: a~%c)\n\n"
 						  (+ ?a (- length 1))))
 		 marker)
 	(dotimes (i length)
-	  (setq marker (ring-ref jda-mark-ring i))
+	  (setq marker (ring-ref jda-marker-ring i))
 	  (setq message (concat message
 							(format "%s[%c] %s:%s\n"
-									(if (equal i jda-mark-ring-iterator)
+									(if (equal i jda-marker-ring-iterator)
 										"=>"
 									  "  ")
 									(+ ?a i)
 									marker
-									(jda-mark-get-line-string marker)))))
+									(jda-marker-get-line-string marker)))))
 	message))
 
-(defun jda-mark-list ()
+(defun jda-marker-list ()
   (interactive)
-  (let ((length (ring-length jda-mark-ring))
+  (let ((length (ring-length jda-marker-ring))
 		index
 		(c ?,))
 	(setq max-mini-window-height (+ length 3))
 	(while (or (char-equal c ?,)
 			   (char-equal c ?.))
-	  (message (jda-mark-list-message))
+	  (message (jda-marker-list-message))
 	  (setq c (read-char))
 	  (cond ((char-equal c ?,)
-			 (jda-mark-prev))
+			 (jda-marker-prev))
 			((char-equal c ?.)
-			 (jda-mark-next))))
+			 (jda-marker-next))))
 	(setq index (- c ?a))
 	(if (and (>= index 0)
 			 (< index length))
-		(jda-mark-jump (ring-ref jda-mark-ring index))
+		(jda-marker-jump (ring-ref jda-marker-ring index))
 	  (beep))
 	(setq max-mini-window-height 0.25)))
 
-(defun jda-mark-finish-jump ()
+(defun jda-marker-finish-jump ()
   (interactive)
-  (setq jda-mark-ring-iterator -1)
+  (setq jda-marker-ring-iterator -1)
   (condition-case nil
 	  (progn
-		(jda-mark-jump (ring-ref jda-mark-ring 0))
-		(jda-mark-list))
+		(jda-marker-jump (ring-ref jda-marker-ring 0))
+		(jda-marker-list))
 	(error nil)))
 
-(defun jda-mark-vector-message (mode)
+(defun jda-marker-vector-message (mode)
   (let ((message (format "Press key(a~%c) to %s the current marker:\n\n"
-						 (+ ?a (- jda-mark-vector-max 1))
+						 (+ ?a (- jda-marker-vector-max 1))
 						 mode))
 		marker)
-	(dotimes (i jda-mark-vector-max)
-	  (setq marker (elt jda-mark-vector i))
+	(dotimes (i jda-marker-vector-max)
+	  (setq marker (elt jda-marker-vector i))
 	  (setq message (concat message
 							(format " [%c] %s:%s\n"
 									(+ ?a i)
 									marker
-									(jda-mark-get-line-string marker)))))
+									(jda-marker-get-line-string marker)))))
 	message))
 
-(defun jda-mark-vector-push ()
+(defun jda-marker-vector-push ()
   (interactive)
   (let ((c ?/)
 		(max-mini-window-height-old max-mini-window-height)
 		(curr-marker (point-marker))
 		i)
-	(while (or (< c ?a) (> c (+ ?a (- jda-mark-vector-max 1))))
-	  (setq max-mini-window-height (+ jda-mark-vector-max 3))
-	  (setq c (read-char-exclusive (jda-mark-vector-message "save"))))
+	(while (or (< c ?a) (> c (+ ?a (- jda-marker-vector-max 1))))
+	  (setq max-mini-window-height (+ jda-marker-vector-max 3))
+	  (setq c (read-char-exclusive (jda-marker-vector-message "save"))))
 	(setq i (- c ?a))
 	(setq max-mini-window-height max-mini-window-height-old)
-	(cond ((and (>= i 0) (<= i jda-mark-vector-max))
-		   (aset jda-mark-vector i curr-marker)
+	(cond ((and (>= i 0) (<= i jda-marker-vector-max))
+		   (aset jda-marker-vector i curr-marker)
 		   (message (format "[%c] %s was saved" c curr-marker))))))
 
-(defun jda-mark-vector-pop ()
+(defun jda-marker-vector-pop ()
   (interactive)
   (let ((c ?/)
 		(max-mini-window-height-old max-mini-window-height)
 		(curr-marker (point-marker))
 		i)
-	(while (or (< c ?a) (> c (+ ?a (- jda-mark-vector-max 1))))
-	  (setq max-mini-window-height (+ jda-mark-vector-max 3))
-	  (setq c (read-char-exclusive (jda-mark-vector-message "restore"))))
+	(while (or (< c ?a) (> c (+ ?a (- jda-marker-vector-max 1))))
+	  (setq max-mini-window-height (+ jda-marker-vector-max 3))
+	  (setq c (read-char-exclusive (jda-marker-vector-message "restore"))))
 	(setq i (- c ?a))
 	(setq max-mini-window-height max-mini-window-height-old)
-	(cond ((and (>= i 0) (<= i jda-mark-vector-max))
-		   (jda-mark-jump (elt jda-mark-vector i))))))
+	(cond ((and (>= i 0) (<= i jda-marker-vector-max))
+		   (jda-marker-jump (elt jda-marker-vector i))))))
 
 ;;;; utility functions
 
@@ -722,7 +722,7 @@
 (defun jda-gf-symbol-at-point ()
   "grep-find with symbol at current point."
   (interactive)
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (let (symbol)
 	(jda-gf-set-project-root)
 	(setq symbol (symbol-at-point))
@@ -745,7 +745,7 @@
 (defun jda-gf-text-at-point ()
   "grep-find with text at current point."
   (interactive)
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (let (symbol)
 	(jda-gf-set-project-root)
 	(setq symbol (symbol-at-point))
@@ -861,7 +861,7 @@
 		   "Query replace regexp in files" t t)))
      (list (nth 0 common) (nth 1 common) (nth 2 common))))
   
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (jda-gf-set-project-root)
   (let (name-option
 		command
@@ -936,7 +936,7 @@ with the command \\[tags-loop-continue]."
 		   "Query replace regexp in files" t t)))
      (list (nth 0 common) (nth 1 common) (nth 2 common))))
   
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (jda-gf-set-project-root)
   (let (name-option
 		find-args
@@ -963,7 +963,7 @@ with the command \\[tags-loop-continue]."
 (defun jda-gf-find-file ()
   "search a file."
   (interactive)
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (let (files)
 	(jda-gf-set-project-root)
 	(setq files (read-from-minibuffer "Find file: "
@@ -981,7 +981,7 @@ with the command \\[tags-loop-continue]."
 (defun jda-gf-find-file-dired ()
   "search a file."
   (interactive)
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (let (files)
 	(jda-gf-set-project-root)
 	(setq files (read-from-minibuffer "Find file: "
@@ -1018,7 +1018,7 @@ with the command \\[tags-loop-continue]."
 		  (query-replace-read-args
 		   "Query replace regexp in files" t t)))
      (list (nth 0 common) (nth 1 common) (nth 2 common))))
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (let (files)
 	(jda-gf-set-project-root)
 	
@@ -1163,13 +1163,13 @@ with the command \\[tags-loop-continue]."
 
 (defun jda-goto-symbol ()
   (interactive)
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (jda-ido-goto-symbol)
-  (jda-mark-push-marker t))
+  (jda-marker-push-marker t))
 
 (defun jda-ido-find-file ()
   (interactive)
-  (jda-mark-push-marker)
+  (jda-marker-push-marker)
   (let (chosen-name
 		find-command
 		same-name-files-list
@@ -1500,18 +1500,18 @@ ex) make -C project/root/directory"
 		["Display All Tags Regexp Matches..." tags-apropos
 		 :help "Display list of all tags in tags table REGEXP magtches"]
 		"----"
-		["Goto Previous Marker" jda-mark-prev-ui
+		["Goto Previous Marker" jda-marker-prev-ui
 		 :help "Goto the previous marker"]
-		["Goto Next Marker" jda-mark-next-ui
+		["Goto Next Marker" jda-marker-next-ui
 		 :help "Goto the next marker"]
-		["Finish Jumping Saved Markers" jda-mark-finish-jump
+		["Finish Jumping Saved Markers" jda-marker-finish-jump
 		 :help "Finish jumping saved markers and Goto the last marker"]
-		["Push Current Marker" jda-mark-push-marker-menu
+		["Push Current Marker" jda-marker-push-marker-menu
 		 :help "Push the current marker"]
 		"---"
-		["Save Current Marker to Mini Bookmark" jda-mark-vector-push
+		["Save Current Marker to Mini Bookmark" jda-marker-vector-push
 		 :help "Save current marker to Mini Bookmark"]
-		["Jump the Marker in Mini Bookmark" jda-mark-vector-pop
+		["Jump the Marker in Mini Bookmark" jda-marker-vector-pop
 		 :help "Jump the marker in Mini Bookmark"]
 		"---"
 		("Objective-C"
@@ -1569,12 +1569,12 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-c j t")		'jda-create-tags)
 	(define-key map (kbd "C-c j v")		'visit-tags-table)
 	(define-key map (kbd "C-c j .")		'tags-apropos)
-	(define-key map (kbd "C-x ,")		'jda-mark-prev-ui)
-	(define-key map (kbd "C-x .")		'jda-mark-next-ui)
-	(define-key map (kbd "C-x /")		'jda-mark-finish-jump)
-	(define-key map (kbd "C-x ?")		'jda-mark-push-marker-menu)
-	(define-key map (kbd "C-c p")		'jda-mark-vector-pop)
-	(define-key map (kbd "C-c P")		'jda-mark-vector-push)
+	(define-key map (kbd "C-x ,")		'jda-marker-prev-ui)
+	(define-key map (kbd "C-x .")		'jda-marker-next-ui)
+	(define-key map (kbd "C-x /")		'jda-marker-finish-jump)
+	(define-key map (kbd "C-x ?")		'jda-marker-push-marker-menu)
+	(define-key map (kbd "C-c p")		'jda-marker-vector-pop)
+	(define-key map (kbd "C-c P")		'jda-marker-vector-push)
 	(define-key map (kbd "C-c |")		'align)
 	(define-key map (kbd "C-c M-|")		'align-regexp)
 	(define-key map (kbd "C-c j [")		'hs-minor-mode)
@@ -1611,8 +1611,8 @@ Key bindings:
          (add-hook 'emulation-mode-map-alists 'yas/direct-keymaps)
 		 (add-hook 'objc-mode-hook 'jda-objc-keymap)
 		 (add-hook 'rinari-minor-mode-hook 'jda-rinari-keymap)
-		 (add-hook 'isearch-mode-hook 'jda-mark-push-marker)
-		 (add-hook 'isearch-mode-end-hook 'jda-mark-push-marker)
+		 (add-hook 'isearch-mode-hook 'jda-marker-push-marker)
+		 (add-hook 'isearch-mode-end-hook 'jda-marker-push-marker)
 		 (add-hook 'dired-mode-hook 'jda-dired-mode-keymap)
 		 (define-key global-map (kbd "M-w") 'jda-kill-ring-save)
 		 (message "jda minor mode enabled"))
@@ -1620,8 +1620,8 @@ Key bindings:
 		 ;; finalize
 		 (remove-hook 'objc-mode-hook 'jda-objc-keymap)
 		 (remove-hook 'rinari-minor-mode-hook 'jda-rinari-keymap)
-		 (remove-hook 'isearch-mode-hook 'jda-mark-push-marker)
-		 (remove-hook 'isearch-mode-end-hook 'jda-mark-push-marker)
+		 (remove-hook 'isearch-mode-hook 'jda-marker-push-marker)
+		 (remove-hook 'isearch-mode-end-hook 'jda-marker-push-marker)
 		 (remove-hook 'emulation-mode-map-alists 'yas/direct-keymaps)
 		 (remove-hook 'dired-mode-hook 'jda-dired-mode-keymap)
 		 (define-key global-map (kbd "M-w") 'kill-ring-save)
