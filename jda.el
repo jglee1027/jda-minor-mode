@@ -412,12 +412,13 @@
 	(dotimes (i length)
 	  (setq marker (ring-ref jda-marker-ring i))
 	  (setq message (concat message
-							(format "%s[%c] %s:%s\n"
+							(format "%s[%c] %s:%d:%s\n"
 									(if (equal i jda-marker-ring-iterator)
 										"=>"
 									  "  ")
 									(+ ?a i)
-									marker
+									(marker-buffer marker)
+									(line-number-at-pos marker)
 									(jda-marker-get-line-string marker)))))
 	message))
 
@@ -459,10 +460,13 @@
 	(dotimes (i jda-marker-vector-max)
 	  (setq marker (elt jda-marker-vector i))
 	  (setq message (concat message
-							(format " [%c] %s:%s\n"
-									(+ ?a i)
-									marker
-									(jda-marker-get-line-string marker)))))
+							(if (null marker)
+								(format " [%c]\n" (+ ?a i))
+							  (format " [%c] %s:%d:%s\n"
+									  (+ ?a i)
+									  (marker-buffer marker)
+									  (line-number-at-pos marker)
+									  (jda-marker-get-line-string marker))))))
 	message))
 
 (defun jda-marker-vector-push ()
