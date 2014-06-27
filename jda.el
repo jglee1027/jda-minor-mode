@@ -398,7 +398,7 @@
 			   (setq end (point))
 			   (setq str (buffer-substring begin end))
 			   (chomp str)
-			   (if (> (length str) 5)
+			   (if (> (length str) 0)
 				   str
 				 marker)))))
 		(t
