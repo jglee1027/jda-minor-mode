@@ -301,6 +301,11 @@
 
 ;;;; jda-marker
 
+(defun jda-marker-line-number-at (marker)
+  (save-excursion
+	(with-current-buffer (marker-buffer marker)
+	  (line-number-at-pos marker))))
+
 ;; jump-to-register in register.el
 (defun jda-marker-jump (marker)
   (cond
@@ -418,7 +423,7 @@
 									  "  ")
 									(+ ?a i)
 									(marker-buffer marker)
-									(line-number-at-pos marker)
+									(jda-marker-line-number-at marker)
 									(jda-marker-get-line-string marker)))))
 	message))
 
@@ -465,7 +470,7 @@
 							  (format " [%c] %s:%d:%s\n"
 									  (+ ?a i)
 									  (marker-buffer marker)
-									  (line-number-at-pos marker)
+									  (jda-marker-line-number-at marker)
 									  (jda-marker-get-line-string marker))))))
 	message))
 
