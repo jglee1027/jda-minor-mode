@@ -143,8 +143,8 @@
 (defvar jda-marker-ring-max 20)
 (defvar jda-marker-ring (make-ring jda-marker-ring-max))
 (defvar jda-marker-ring-iterator -1)
-(defvar jda-marker-vector-max 10)
-(defvar jda-marker-vector (make-vector jda-marker-vector-max nil))
+(defvar jda-marker-bookmark-max 10)
+(defvar jda-marker-bookmark (make-vector jda-marker-bookmark-max nil))
 
 (defvar jda-make-command-history nil)
 (defvar jda-xcode-doc-text-history nil)
@@ -457,13 +457,13 @@
 		(jda-marker-list))
 	(error nil)))
 
-(defun jda-marker-vector-message (mode)
+(defun jda-marker-bookmark-message (mode)
   (let ((message (format "Press key(a~%c) to %s the current marker:\n\n"
-						 (+ ?a (- jda-marker-vector-max 1))
+						 (+ ?a (- jda-marker-bookmark-max 1))
 						 mode))
 		marker)
-	(dotimes (i jda-marker-vector-max)
-	  (setq marker (elt jda-marker-vector i))
+	(dotimes (i jda-marker-bookmark-max)
+	  (setq marker (elt jda-marker-bookmark i))
 	  (setq message (concat message
 							(if (null marker)
 								(format " [%c]\n" (+ ?a i))
@@ -474,34 +474,34 @@
 									  (jda-marker-get-line-string marker))))))
 	message))
 
-(defun jda-marker-vector-push ()
+(defun jda-marker-bookmark-save ()
   (interactive)
   (let ((c ?/)
 		(max-mini-window-height-old max-mini-window-height)
 		(curr-marker (point-marker))
 		i)
-	(while (or (< c ?a) (> c (+ ?a (- jda-marker-vector-max 1))))
-	  (setq max-mini-window-height (+ jda-marker-vector-max 3))
-	  (setq c (read-char-exclusive (jda-marker-vector-message "save"))))
+	(while (or (< c ?a) (> c (+ ?a (- jda-marker-bookmark-max 1))))
+	  (setq max-mini-window-height (+ jda-marker-bookmark-max 3))
+	  (setq c (read-char-exclusive (jda-marker-bookmark-message "save"))))
 	(setq i (- c ?a))
 	(setq max-mini-window-height max-mini-window-height-old)
-	(cond ((and (>= i 0) (<= i jda-marker-vector-max))
-		   (aset jda-marker-vector i curr-marker)
+	(cond ((and (>= i 0) (<= i jda-marker-bookmark-max))
+		   (aset jda-marker-bookmark i curr-marker)
 		   (message (format "[%c] %s was saved" c curr-marker))))))
 
-(defun jda-marker-vector-pop ()
+(defun jda-marker-bookmark-restore ()
   (interactive)
   (let ((c ?/)
 		(max-mini-window-height-old max-mini-window-height)
 		(curr-marker (point-marker))
 		i)
-	(while (or (< c ?a) (> c (+ ?a (- jda-marker-vector-max 1))))
-	  (setq max-mini-window-height (+ jda-marker-vector-max 3))
-	  (setq c (read-char-exclusive (jda-marker-vector-message "restore"))))
+	(while (or (< c ?a) (> c (+ ?a (- jda-marker-bookmark-max 1))))
+	  (setq max-mini-window-height (+ jda-marker-bookmark-max 3))
+	  (setq c (read-char-exclusive (jda-marker-bookmark-message "restore"))))
 	(setq i (- c ?a))
 	(setq max-mini-window-height max-mini-window-height-old)
-	(cond ((and (>= i 0) (<= i jda-marker-vector-max))
-		   (jda-marker-jump (elt jda-marker-vector i))))))
+	(cond ((and (>= i 0) (<= i jda-marker-bookmark-max))
+		   (jda-marker-jump (elt jda-marker-bookmark i))))))
 
 ;;;; utility functions
 
@@ -1518,9 +1518,9 @@ ex) make -C project/root/directory"
 		["Push Current Marker" jda-marker-push-marker-menu
 		 :help "Push the current marker"]
 		"---"
-		["Save Current Marker to Mini Bookmark" jda-marker-vector-push
+		["Save Current Marker to Mini Bookmark" jda-marker-bookmark-save
 		 :help "Save current marker to Mini Bookmark"]
-		["Jump the Marker in Mini Bookmark" jda-marker-vector-pop
+		["Jump the Marker in Mini Bookmark" jda-marker-bookmark-restore
 		 :help "Jump the marker in Mini Bookmark"]
 		"---"
 		("Objective-C"
@@ -1582,8 +1582,8 @@ ex) make -C project/root/directory"
 	(define-key map (kbd "C-x .")		'jda-marker-next-ui)
 	(define-key map (kbd "C-x /")		'jda-marker-finish-jump)
 	(define-key map (kbd "C-x ?")		'jda-marker-push-marker-menu)
-	(define-key map (kbd "C-c p")		'jda-marker-vector-pop)
-	(define-key map (kbd "C-c P")		'jda-marker-vector-push)
+	(define-key map (kbd "C-c p")		'jda-marker-bookmark-restore)
+	(define-key map (kbd "C-c P")		'jda-marker-bookmark-save)
 	(define-key map (kbd "C-c |")		'align)
 	(define-key map (kbd "C-c M-|")		'align-regexp)
 	(define-key map (kbd "C-c j [")		'hs-minor-mode)
