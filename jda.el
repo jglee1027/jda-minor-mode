@@ -444,8 +444,7 @@
 	(setq index (- c ?a))
 	(if (and (>= index 0)
 			 (< index length))
-		(jda-marker-jump (ring-ref jda-marker-ring index))
-	  (beep))
+		(jda-marker-jump (ring-ref jda-marker-ring index)))
 	(setq max-mini-window-height 0.25)))
 
 (defun jda-marker-finish-jump ()
@@ -484,7 +483,7 @@
 	(setq c (read-char-exclusive (jda-marker-bookmark-message "save")))
 	(setq i (- c ?a))
 	(setq max-mini-window-height max-mini-window-height-old)
-	(cond ((and (>= i 0) (<= i jda-marker-bookmark-max))
+	(cond ((and (>= i 0) (< i jda-marker-bookmark-max))
 		   (aset jda-marker-bookmark i curr-marker)
 		   (message (format "[%c] %s was saved" c curr-marker))))))
 
@@ -498,7 +497,7 @@
 	(setq c (read-char-exclusive (jda-marker-bookmark-message "restore")))
 	(setq i (- c ?a))
 	(setq max-mini-window-height max-mini-window-height-old)
-	(cond ((and (>= i 0) (<= i jda-marker-bookmark-max))
+	(cond ((and (>= i 0) (< i jda-marker-bookmark-max))
 		   (jda-marker-jump (elt jda-marker-bookmark i))))))
 
 ;;;; utility functions
