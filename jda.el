@@ -642,9 +642,10 @@
 
 (defun jda-kill-ring-save (begin end)
   (interactive "r")
-  (cond ((and jda-kill-ring-save-is-set
-			  (not (and (functionp 'use-region-p)
-						(use-region-p))))
+  (cond ((null (functionp 'use-region-p))
+		 (kill-ring-save begin end))
+		((and jda-kill-ring-save-is-set
+			  (not (use-region-p)))
 		 (let ((bounds (bounds-of-thing-at-point 'symbol)))
 		   (if bounds
 			   (copy-region-as-kill (car bounds) (cdr bounds))
