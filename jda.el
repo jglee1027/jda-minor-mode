@@ -150,6 +150,9 @@
 (defvar jda-xcode-doc-text-history nil)
 (defvar jda-xcode-sdk-history nil)
 (defvar jda-xcode-project-history nil)
+(defvar jda-xcode-configuration-history nil)
+(defvar jda-xcode-target-history nil)
+(defvar jda-xcode-scheme-history nil)
 (defvar jda-xcode-build-history nil)
 
 (defvar jda-highlight-symbol-color 'hi-blue)
@@ -194,7 +197,7 @@
   :group 'jda)
 
 (defcustom jda-xcodebuild-command
-  "xcodebuild -activeconfiguration -activetarget"
+  "xcrun xcodebuild"
   "Xcodebuild default command"
   :type 'string
   :group 'jda)
@@ -1247,7 +1250,9 @@ with the command \\[tags-loop-continue]."
   (setq jda-xcode-available-sdks nil)
   (dolist (line
 		   (split-string (with-temp-buffer
-						   (shell-command "xcodebuild -showsdks" t)
+						   (shell-command (format "%s -showsdks"
+												  jda-xcodebuild-command)
+										  t)
 						   (buffer-string))
 						 "\n" t))
 	(let ((items (split-string line "-sdk " t)))
@@ -1264,6 +1269,43 @@ with the command \\[tags-loop-continue]."
 	  (setq current-dir (jda-get-super-directory current-dir)))
 	xcodeprojs))
 
+(defun jda-xcode-get-xcodeproj-info-plist (xcodeproj)
+  (let ((xcodeproj-info-plist '(targets nil configurations nil schmes))
+		(pname nil)
+		(targets nil)
+		(configurations nil)
+		(schemes nil)
+		item)
+	(dolist (line
+			 (split-string (with-temp-buffer
+							 (shell-command (format "%s -project %s -list"
+													jda-xcodebuild-command
+													xcodeproj)
+											t)
+							 (buffer-string))
+						   "\n" nil))
+	  (setq item (chomp line))
+	  (cond ((equal "Targets:" item)
+			 (setq pname 'targets))
+			((equal "Build Configurations:" item)
+			 (setq pname 'configurations))
+			((equal "Schemes:" item)
+			 (setq pname 'schemes))
+			((and (not (null pname))
+				  (> (length item) 1))
+			 (add-to-list pname item t))
+			(t
+			 (setq pname nil))))
+	(setq xcodeproj-info-plist (plist-put xcodeproj-info-plist
+										  'targets
+										  targets))
+	(setq xcodeproj-info-plist (plist-put xcodeproj-info-plist
+										  'configurations
+										  configurations))
+	(setq xcodeproj-info-plist (plist-put xcodeproj-info-plist
+										  'schemes
+										  schemes))))
+
 (defun jda-xcode-build ()
   (interactive)
   ;; initialize xcode sdks
@@ -1271,7 +1313,11 @@ with the command \\[tags-loop-continue]."
 	  (jda-xcode-set-available-sdks))
   (let ((sdk (or (car jda-xcode-sdk-history)
 				 (car jda-xcode-available-sdks)))
-		(xcodeproj ""))
+		(xcodeproj "")
+		(xcodeproj-info-plist nil)
+		(configuration "")
+		(target "")
+		(scheme ""))
 	;; select sdk
 	(setq sdk (completing-read "Xcode SDK: "
 							   jda-xcode-available-sdks
@@ -1288,14 +1334,53 @@ with the command \\[tags-loop-continue]."
 										   nil
 										   (car xcodeprojs)
 										   'jda-xcode-project-history))))
+
+	(setq xcodeproj-info-plist (jda-xcode-get-xcodeproj-info-plist
+								xcodeproj))
+
+	;; select configuration
+	(if (not (null xcodeproj-info-plist))
+		(setq configuration (completing-read "Configuration: "
+											 (plist-get xcodeproj-info-plist
+														'configurations)
+											 nil
+											 nil
+											 (car (plist-get xcodeproj-info-plist
+															 'configurations))
+											 'jda-xcode-configuration-history)))
+	;; select target
+	(if (not (null xcodeproj-info-plist))
+		(setq target (completing-read "Target: "
+									  (plist-get xcodeproj-info-plist
+												 'targets)
+									  nil
+									  nil
+									  (car (plist-get xcodeproj-info-plist
+													  'targets))
+									  'jda-xcode-target-history)))
+	;; select scheme
+	(if (and (not (null xcodeproj-info-plist))
+			 (= (length target) 0))
+		(setq scheme (completing-read "Scheme: "
+									  (plist-get xcodeproj-info-plist
+												 'schemes)
+									  nil
+									  nil
+									  (car (plist-get xcodeproj-info-plist
+													  'schemes))
+									  'jda-xcode-scheme-history)))
 	;; build
 	(compile (jda-read-shell-command "Compile command: "
-									 (format "cd %s && %s -sdk %s -project %s"
-											 (jda-get-super-directory xcodeproj)
+									 (format "%s -sdk %s -project %s -configuration %s %s"
 											 jda-xcodebuild-command
 											 sdk
-											 (file-name-nondirectory xcodeproj))
-									 'jda-xcode-build-history))))
+											 xcodeproj
+											 configuration
+											 (if (> (length target) 1)
+												 (format "-target %s" target)
+											   (format "-scheme %s" scheme))
+											 'jda-xcode-build-history)))))
+
 ;;;; make
 
 (defun jda-get-makefile-dir ()
