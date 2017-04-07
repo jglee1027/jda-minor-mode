@@ -208,6 +208,12 @@
   :type 'string
   :group 'jda)
 
+(defcustom jda-find-command
+  "find -L"
+  "find command"
+  :type 'string
+  :group 'jda)
+
 ;;;; common functions
 
 (defun chomp (str)
@@ -745,7 +751,8 @@
                                        'jda-gf-symbol-history))
     (setq compilation-finish-function 'jda-gf-select-grep-buffer)
     (grep-find (jda-read-shell-command "Command: "
-                                       (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e '\\<%s\\>'"
+                                       (format "%s %s -type f %s %s -print0 | xargs -0 grep -nH -e '\\<%s\\>'"
+                                               jda-find-command
                                                jda-gf-project-root
                                                (jda-gf-get-assoc-find-name-options)
                                                (jda-gf-get-find-exclusive-path-options)
@@ -768,7 +775,8 @@
                                        'jda-gf-symbol-history))
     (setq compilation-finish-function 'jda-gf-select-grep-buffer)
     (grep-find (jda-read-shell-command "Command: "
-                                       (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e '%s'"
+                                       (format "%s %s -type f %s %s -print0 | xargs -0 grep -nH -e '%s'"
+                                               jda-find-command
                                                jda-gf-project-root
                                                (jda-gf-get-assoc-find-name-options)
                                                (jda-gf-get-find-exclusive-path-options)
@@ -888,7 +896,8 @@
                                              name-option)))
     (setq command (jda-read-shell-command
                    "Command: "
-                   (format "find -L %s -type f %s %s -print0 | xargs -0 grep -nH -e '%s'"
+                   (format "%s %s -type f %s %s -print0 | xargs -0 grep -nH -e '%s'"
+                           jda-find-command
                            jda-gf-project-root
                            name-option
                            (jda-gf-get-find-exclusive-path-options)
@@ -983,7 +992,8 @@ with the command \\[tags-loop-continue]."
                                       'jda-gf-find-file-history))
     (setq compilation-finish-function 'jda-gf-select-grep-buffer)
     (grep-find (jda-read-shell-command "Command: "
-                                       (format "find -L %s -type f %s "
+                                       (format "%s %s -type f %s "
+                                               jda-find-command
                                                jda-gf-project-root
                                                (jda-gf-get-find-name-options files))
                                        'jda-gf-find-file-command-history))))
@@ -1044,7 +1054,8 @@ with the command \\[tags-loop-continue]."
                                       nil
                                       'jda-gf-replace-file-history))
     (shell-command (jda-read-shell-command "Command: "
-                                           (format "find -L %s -type f %s "
+                                           (format "%s %s -type f %s "
+                                                   jda-find-command
                                                    jda-gf-project-root
                                                    (jda-gf-get-find-name-options files))
                                            'jda-gf-replace-file-command-history)
@@ -1063,7 +1074,8 @@ with the command \\[tags-loop-continue]."
                              jda-create-tags-directory
                              'jda-create-tags-directory-history)
   (shell-command (jda-read-shell-command "Command: "
-                                         (format "find -L %s -type f %s %s -print | etags - -o %s/TAGS"
+                                         (format "%s %s -type f %s %s -print | etags - -o %s/TAGS"
+                                                 jda-find-command
                                                  jda-create-tags-directory
                                                  (jda-gf-get-assoc-find-name-options)
                                                  (jda-gf-get-find-exclusive-path-options)
@@ -1186,7 +1198,8 @@ with the command \\[tags-loop-continue]."
         (same-name-files-count 0))
     (jda-gf-set-project-root)
     (setq find-command
-          (format "find -L %s -type f %s"
+          (format "%s %s -type f %s"
+                  jda-find-command
                   jda-gf-project-root
                   (jda-gf-get-find-exclusive-path-options)))
     (message "Finding...")
@@ -1703,6 +1716,8 @@ Key bindings:
          (ido-mode t)
          (if (boundp 'ffap-bindings)
              (ffap-bindings))
+         (if (eq system-type 'windows-nt)
+             (setq jda-find-command "find"))
          (add-hook 'emulation-mode-map-alists 'yas/direct-keymaps)
          (add-hook 'objc-mode-hook 'jda-objc-keymap)
          (add-hook 'rinari-minor-mode-hook 'jda-rinari-keymap)
