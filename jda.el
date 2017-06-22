@@ -261,7 +261,7 @@
 
 ;;;; jda-highlight
 
-;; callback function 
+;; callback function
 (defun jda-highlight-symbol-callback ()
   (save-excursion
     (let* ((symbol (symbol-at-point))
@@ -557,14 +557,14 @@
         file-name-non-dir
         current-dir
         sub-dir-list)
-    
+
     (if (or (equal extensions-to-visit nil)
             (equal (buffer-file-name) nil))
         (throw 'visit-file-exception "Not supported!"))
-    
+
     (setq file-name-sans-ext (file-name-sans-extension (buffer-file-name)))
     (setq file-name-non-dir (file-name-nondirectory file-name-sans-ext))
-    
+
     ;; in current directory
     ;; in super directory
     ;; in sub-dir of super-dir
@@ -579,7 +579,7 @@
       (jda-visit-file-in-sub-dirs sub-dir-list
                                   file-name-non-dir
                                   extensions-to-visit))
-    
+
     ;; in sub-dir of sub-dir
     ;; ...
     (setq current-dir (file-name-directory file-name-sans-ext))
@@ -607,7 +607,7 @@
         (same-name-files-count 0)
         file-name
         file-ext)
-    
+
     (if (null jda-ido-find-file-files-alist)
         (throw 'visit-file-exception "Not found! Set project root directory"))
 
@@ -661,6 +661,12 @@
              (kill-ring-save begin end))))
         (t
          (kill-ring-save begin end))))
+
+(defun jda-delete-trailing-whitespace (begin end)
+  (interactive "r")
+  (if mark-active
+      (replace-regexp "^[[:space:]]+$\\|[[:space:]]+$" "" nil begin end)
+    (query-replace-regexp "^[[:space:]]+$\\|[[:space:]]+$" "")))
 
 (defun jda-gf-get-find-exclusive-path-options ()
   (let (path-list path-option)
@@ -799,21 +805,21 @@
           (query-replace-read-args
            "Query replace regexp in found files" t t)))
      (list (nth 0 common) (nth 1 common) (nth 2 common))))
-  
+
   (condition-case nil
       (next-error)
     (error "Query replace finished"))
   (condition-case nil
       (previous-error)
     (error nil))
-  
+
   (let ((done nil)
         (all nil)
         (count 0)
         key
         buffer)
     (message "")
-    
+
     (while (not done)
       (with-current-buffer "*grep*"
         (setq buffer (get-buffer
@@ -831,7 +837,7 @@
 
       (message (format "Query replacing '%s' with '%s' (y/n/a/q)?" from to))
       (setq key (read-event))
-      
+
       (cond ((equal key ?y)
              (setq count (+ 1 count))
              (jda-gf-grep-query-replace-in-current-line from to buffer)
@@ -849,7 +855,7 @@
              (setq done t))
             ((equal key ?q)
              (setq done t))))
-    
+
     (setq done nil)
     (cond (all
            (while (not done)
@@ -857,7 +863,7 @@
              (setq count (+ 1 count))
              (condition-case nil
                  (next-error)
-               (error 
+               (error
                 (setq done t))))))
 
     (while jda-gf-grep-query-replace-buffers-alist
@@ -869,7 +875,7 @@
               (set-buffer buffer)
               (hi-lock-unface-buffer symbol-regex))
           (error nil))))
-    
+
     (message "Replaced %d occurrences" count)))
 
 (defun jda-gf-grep-query-replace-old (from to &optional delimited)
@@ -878,7 +884,7 @@
           (query-replace-read-args
            "Query replace regexp in files" t t)))
      (list (nth 0 common) (nth 1 common) (nth 2 common))))
-  
+
   (jda-marker-push-marker)
   (jda-gf-set-project-root)
   (let (name-option
@@ -903,7 +909,7 @@
                            (jda-gf-get-find-exclusive-path-options)
                            from)
                    'jda-gf-grep-query-command-history))
-    
+
     (shell-command command "*grep*")
     (with-current-buffer "*grep*"
       (grep-mode)
@@ -954,7 +960,7 @@ with the command \\[tags-loop-continue]."
           (query-replace-read-args
            "Query replace regexp in files" t t)))
      (list (nth 0 common) (nth 1 common) (nth 2 common))))
-  
+
   (jda-marker-push-marker)
   (jda-gf-set-project-root)
   (let (name-option
@@ -1024,7 +1030,7 @@ with the command \\[tags-loop-continue]."
           (setq end (- (point) 1))
           (add-to-list 'files (buffer-substring start end) t)
           (setq start (point)))))
-    
+
     (dolist (file files)
       (let ((buffer (get-file-buffer file)))
         (if (and buffer (with-current-buffer buffer
@@ -1041,7 +1047,7 @@ with the command \\[tags-loop-continue]."
   (jda-marker-push-marker)
   (let (files)
     (jda-gf-set-project-root)
-    
+
     (cond ((null (buffer-file-name))
            (setq files ""))
           (t
@@ -1063,7 +1069,7 @@ with the command \\[tags-loop-continue]."
     (delete-other-windows)
     (condition-case err
         (tags-query-replace from to delimited '(jda-gf-get-query-replace-files))
-      (error 
+      (error
        (kill-buffer "*jda-query-replace*")
        (message "%s" (error-message-string err))))))
 
@@ -1487,9 +1493,9 @@ ex) make -C project/root/directory"
     (c-beginning-of-defun)
     (setq beginning-of-defun-point (point))
     (goto-char current-point)
-    
+
     (setq is-exist-right-bracket (looking-back "\\][ \t\n]*"))
-    
+
     ;; search parentheses and move the position
     (setq should-insert-brakets
           (catch 'while-exit
@@ -1513,7 +1519,7 @@ ex) make -C project/root/directory"
                        (throw 'while-exit '(t t))))
                     ((equal depth 1)
                      (throw 'while-exit '(nil t)))))))
-    
+
     ;; insert "["
     (cond ((and (equal depth 0)
                 (< beginning-of-defun-point
@@ -1536,10 +1542,10 @@ ex) make -C project/root/directory"
            (setq left-bracket-pos (point))
            (forward-list)
            (setq right-bracket-pos (point))
-           
+
            (goto-char left-bracket-pos)
            (delete-char 1)
-           
+
            (goto-char right-bracket-pos)
            (backward-char 2)
            (delete-char 1)))))
@@ -1651,7 +1657,7 @@ ex) make -C project/root/directory"
          :help "Customize jda-minor-mode"]
         ["About JDA" jda-about
          :help "Display brief information about JDA"]))
-    
+
     ;; key map
     (define-key map (kbd "C-c c")       'jda-build)
     (define-key map (kbd "C-c h")       'jda-doc)
@@ -1671,6 +1677,7 @@ ex) make -C project/root/directory"
     (define-key map (kbd "C-c j O")     'jda-pop-to-compilation-buffer-fill)
     (define-key map (kbd "C-c m")       'jda-goto-symbol)
     (define-key map (kbd "C-c j 5")     'jda-gf-grep-query-replace)
+    (define-key map (kbd "C-c j $")     'delete-trailing-whitespace)
     (define-key map (kbd "C-c j %")     'jda-gf-find-query-replace)
     (define-key map (kbd "C-c j T")     'jda-create-tags-in-default-directory)
     (define-key map (kbd "C-c j t")     'jda-create-tags)
