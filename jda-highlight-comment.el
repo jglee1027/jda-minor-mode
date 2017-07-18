@@ -1,9 +1,9 @@
 ;;; jda-highlight-comment.el --- highlight comment(TODO, FIXME, region, ...)
 
-;; Copyright (C) 2017 Lee Jong-Gyu<jglee1027@gmail.com>
+;; Copyright (C) 2017 Jong-gyu Lee<jglee1027@gmail.com>
 
-;; Authors: Lee Jong-Gyu<jglee1027@gmail.com>
-;; Maintainer: Lee Jong-Gyu<jglee1027@gmail.com>
+;; Authors: Jonggyu Lee<jglee1027@gmail.com>
+;; Maintainer: Jonggyu Lee<jglee1027@gmail.com>
 ;; Created: 12 Jul 2017
 ;; Version: 0.1.0
 ;; Keywords: languages, tools
@@ -35,6 +35,7 @@
 ;;   Edit your ~/.emacs file to add the line:
 ;;     (add-to-list 'load-path "/path/to/jda-minor-mode")
 ;;     (require 'jda-highlight-comment)
+;;     (jda-hl-comment-mode)
 
 ;; * Major commands:
 ;; ** List highlight comments
@@ -64,18 +65,6 @@
   '((nil            .   "\\b\\(TODO\\|NOTE\\|FIXME\\|BUG\\|WARNING\\)\\b"))
   "Regular expression to search todo comment"
   :type 'alist
-  :group 'jda-hl-comment)
-
-(defcustom jda-hl-comment-c-region-regexp
-  "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\)"
-  "Regular expression to search region comment in c or c++"
-  :type 'string
-  :group 'jda-hl-comment)
-
-(defcustom jda-hl-comment-c-todo-regexp
-  "\\b\\(TODO\\|NOTE\\|FIXME\\|BUG\\|WARNING\\)\\b"
-  "Regular expression to search todo comment in c or c++"
-  :type 'string
   :group 'jda-hl-comment)
 
 (defvar jda-hl-comment-ring-max 20)
@@ -316,7 +305,7 @@ Key bindings:
   ;; init-value
   :init-value nil
   ;; The indicator for the mode line.
-  :lighter ""
+  :lighter " hl-c"
   ;; The minor mode bindings.
   :keymap jda-hl-comment-mode-map
   :group 'jda-hl-comment
