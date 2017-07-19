@@ -52,17 +52,18 @@
   :prefix "jda-hl-comment-")
 
 (defcustom jda-hl-comment-region-regexp-alist
-  '(("C/l"          .   "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\)")
-    ("C++/l"        .   "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\)")
-    ("Emacs-Lisp"   .   "^[[:space:]]*;;;.*$")
-    ("Java/l"       .   "\\(/\\*\\*\\*.*\\*\\*\\*/\\|//[[:space:]]*region\\)")
-    (nil            .   "/\\*\\*\\*.*\\*\\*\\*/"))
+  '(("C/l"          .   ("c-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\)"))
+    ("C++/l"        .   ("c++-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\)"))
+    ("Emacs-Lisp"   .   ("lisp-mode-hook" "^[[:space:]]*;;;.*$"))
+    ("Java/l"       .   ("java-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|//[[:space:]]*region\\)"))
+    ("ObjC/l"       .   ("objc-mode-hook" "#pragma[[:space:]]*mark[[:space:]]+.\\{2,\\}"))
+    (nil            .   (nil "/\\*\\*\\*.*\\*\\*\\*/")))
   "Regular expression to search region comment"
   :type 'alist
   :group 'jda-hl-comment)
 
 (defcustom jda-hl-comment-todo-regexp-alist
-  '((nil            .   "\\b\\(TODO\\|NOTE\\|FIXME\\|BUG\\|WARNING\\)\\b"))
+  '((nil            .   (nil "\\b\\(TODO\\|NOTE\\|FIXME\\|BUG\\|WARNING\\)\\b")))
   "Regular expression to search todo comment"
   :type 'alist
   :group 'jda-hl-comment)
@@ -88,14 +89,14 @@
 (defun jda-hl-comment-region-regexp ()
   (let ((regexp-list (assoc mode-name jda-hl-comment-region-regexp-alist)))
     (if (null regexp-list)
-        (cdr (assoc nil jda-hl-comment-region-regexp-alist))
-      (cdr regexp-list))))
+        (car (cddr (assoc nil jda-hl-comment-region-regexp-alist)))
+      (car (cddr regexp-list)))))
 
 (defun jda-hl-comment-todo-regexp ()
   (let ((regexp-list (assoc mode-name jda-hl-comment-todo-regexp-alist)))
     (if (null regexp-list)
-        (cdr (assoc nil jda-hl-comment-todo-regexp-alist))
-      (cdr regexp-list))))
+        (car (cddr (assoc nil jda-hl-comment-todo-regexp-alist)))
+      (car (cddr regexp-list)))))
 
 (defun jda-hl-comment-mode-initialize ()
   (interactive)
@@ -104,7 +105,7 @@
 
 (defun jda-hl-comment-mode-finalize ()
   (interactive)
-  (hi-lock-unface-buffer (jda-hl-comment--region-regexp))
+  (hi-lock-unface-buffer (jda-hl-comment-region-regexp))
   (hi-lock-unface-buffer (jda-hl-comment-todo-regexp)))
 
 (defun jda-hl-comment-line-number-at (marker)
@@ -292,6 +293,22 @@
 
 (defvar jda-hl-comment-mode-map nil)
 
+(defun jda-hl-comment-add-hook ()
+  (mapcar (lambda (entry)
+            (let ((mode (cadr entry)))
+              (if (not (null mode))
+                  (add-hook (intern mode)
+                            'jda-hl-comment-mode-initialize))))
+          jda-hl-comment-region-regexp-alist))
+
+(defun jda-hl-comment-remove-hook ()
+  (mapcar (lambda (entry)
+            (let ((mode (cadr entry)))
+              (if (not (null mode))
+                  (remove-hook (intern mode)
+                               'jda-hl-comment-mode-initialize))))
+          jda-hl-comment-region-regexp-alist))
+
 ;;;###autoload
 (define-minor-mode jda-hl-comment-mode
   "Toggle JDA(Jonggyu Development Assistant) highlight comment mode
@@ -312,19 +329,14 @@ Key bindings:
   :global t
   (cond (jda-hl-comment-mode
          ;; initialize
-         (add-hook 'c-mode-hook 'jda-hl-comment-mode-initialize)
-         (add-hook 'c++-mode-hook 'jda-hl-comment-mode-initialize)
-         (add-hook 'java-mode-hook 'jda-hl-comment-mode-initialize)
-         (add-hook 'lisp-mode-hook 'jda-hl-comment-mode-initialize)
          (define-key global-map (kbd "C-c j /") 'jda-hl-comment-list)
+         (jda-hl-comment-add-hook)
          (message "jda-hl-comment-mode enabled"))
         (t
          ;; finalize
-         (remove-hook 'c-mode-hook 'jda-hl-comment-mode-initialize)
-         (remove-hook 'c++-mode-hook 'jda-hl-comment-mode-initialize)
-         (remove-hook 'java-mode-hook 'jda-hl-comment-mode-initialize)
-         (remove-hook 'lisp-mode-hook 'jda-hl-comment-mode-initialize)
          (define-key global-map (kbd "C-c j /") nil)
+         (jda-hl-comment-remove-hook)
+         (jda-hl-comment-mode-finalize)
          (message "jda-hl-comment-mode disabled"))))
 
 ;;;###autoload
