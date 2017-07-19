@@ -55,7 +55,7 @@
   '(("C/l"          .   ("c-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\)"))
     ("C++/l"        .   ("c++-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\)"))
     ("Emacs-Lisp"   .   ("lisp-mode-hook" "^[[:space:]]*;;;.*$"))
-    ("Java/l"       .   ("java-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|//[[:space:]]*region\\)"))
+    ("Java/l"       .   ("java-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|//[[:space:]]*region\\)"))
     ("ObjC/l"       .   ("objc-mode-hook" "#pragma[[:space:]]*mark[[:space:]]+.\\{2,\\}"))
     (nil            .   (nil "/\\*\\*\\*.*\\*\\*\\*/")))
   "Regular expression to search region comment"
@@ -63,7 +63,7 @@
   :group 'jda-hl-comment)
 
 (defcustom jda-hl-comment-todo-regexp-alist
-  '((nil            .   (nil "\\b\\(TODO\\|NOTE\\|FIXME\\|BUG\\|WARNING\\)\\b")))
+  '((nil            .   (nil "\\b\\(TODO\\|NOTE\\|FIXME\\|BUG\\|WARNING\\)\\b[[:space:]]*:")))
   "Regular expression to search todo comment"
   :type 'alist
   :group 'jda-hl-comment)
