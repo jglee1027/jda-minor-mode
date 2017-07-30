@@ -68,7 +68,16 @@
   :type 'alist
   :group 'jda-hl-comment)
 
-(defvar jda-hl-comment-ring-max 20)
+(defcustom jda-hl-comment-ring-max
+  1024
+  "Maxium of comment item"
+  :type 'integer
+  :group 'jda-hl-comment)
+
+(defvar jda-hl-comment-menu-item-count 26)
+(defvar jda-hl-comment-menu-current-page 0)
+(defvar jda-hl-comment-menu-last-buffer nil)
+(defvar jda-hl-comment-menu-total-page 1)
 (defvar jda-hl-comment-ring (make-ring jda-hl-comment-ring-max))
 (defvar jda-hl-comment-ring-iterator -1)
 
@@ -177,12 +186,23 @@
   (interactive)
   (setq jda-hl-comment-ring (make-ring jda-hl-comment-ring-max))
   (setq jda-hl-comment-ring-iterator -1)
+  (cond ((not (equal jda-hl-comment-menu-last-buffer
+                     (current-buffer)))
+         (setq jda-hl-comment-menu-current-page 0)
+         (setq jda-hl-comment-menu-last-buffer (current-buffer))))
   (dolist (marker (jda-hl-comment-match-markers-in-buffer
                    (jda-hl-comment-todo-regexp)))
     (jda-hl-comment-push-marker-ring marker))
   (dolist (marker (jda-hl-comment-match-markers-in-buffer
                    (jda-hl-comment-region-regexp)))
-    (jda-hl-comment-push-marker-ring marker)))
+    (jda-hl-comment-push-marker-ring marker))
+  (let ((length (ring-length jda-hl-comment-ring)))
+    (setq jda-hl-comment-menu-total-page
+          (+ (/ length
+                jda-hl-comment-menu-item-count)
+             (if (> (mod length jda-hl-comment-menu-item-count) 1)
+                 1
+               0)))))
 
 (defun jda-hl-comment-push-marker-menu ()
   (interactive)
@@ -190,15 +210,27 @@
 
 (defun jda-hl-comment-next ()
   (interactive)
-  (cond ((equal jda-hl-comment-ring-iterator -1)
-         (setq jda-hl-comment-ring-iterator 0)))
   (condition-case nil
-      (let* ((prev-iterator (mod (1+ jda-hl-comment-ring-iterator)
-                                 (ring-length jda-hl-comment-ring)))
-             (prev-marker (ring-ref jda-hl-comment-ring prev-iterator)))
-        (jda-hl-comment-jump prev-marker)
-        (setq jda-hl-comment-ring-iterator prev-iterator))
+      (let* ((length (ring-length jda-hl-comment-ring))
+             (next-iterator (mod (1+ jda-hl-comment-ring-iterator)
+                                 (if (< jda-hl-comment-menu-current-page
+                                        (/ length
+                                           jda-hl-comment-menu-item-count))
+                                     jda-hl-comment-menu-item-count
+                                   (mod length jda-hl-comment-menu-item-count))))
+             (next-marker (ring-ref jda-hl-comment-ring (+ next-iterator
+                                                           (* jda-hl-comment-menu-current-page
+                                                              jda-hl-comment-menu-item-count)))))
+        (jda-hl-comment-jump next-marker)
+        (setq jda-hl-comment-ring-iterator next-iterator))
     (error nil)))
+
+(defun jda-hl-comment-next-page ()
+  (interactive)
+  (setq jda-hl-comment-ring-iterator -1)
+  (setq jda-hl-comment-menu-current-page
+        (mod (1+ jda-hl-comment-menu-current-page)
+             jda-hl-comment-menu-total-page)))
 
 (defun jda-hl-comment-next-ui ()
   (interactive)
@@ -207,16 +239,29 @@
 
 (defun jda-hl-comment-prev ()
   (interactive)
-  (cond ((equal jda-hl-comment-ring-iterator -1)
-         (message "Should run the command 'jda-hl-comment-next'"))
-        (t
-         (condition-case nil
-             (let* ((next-iterator (mod (1- jda-hl-comment-ring-iterator)
-                                        (ring-length jda-hl-comment-ring)))
-                    (next-marker (ring-ref jda-hl-comment-ring next-iterator)))
-               (jda-hl-comment-jump next-marker)
-               (setq jda-hl-comment-ring-iterator next-iterator))
-           (error nil)))))
+  (if (equal jda-hl-comment-ring-iterator -1)
+      (setq jda-hl-comment-ring-iterator 0))
+  (condition-case nil
+      (let* ((length (ring-length jda-hl-comment-ring))
+             (prev-iterator (mod (1- jda-hl-comment-ring-iterator)
+                                 (if (< jda-hl-comment-menu-current-page
+                                        (/ length
+                                           jda-hl-comment-menu-item-count))
+                                     jda-hl-comment-menu-item-count
+                                   (mod length jda-hl-comment-menu-item-count))))
+             (prev-marker (ring-ref jda-hl-comment-ring (+ prev-iterator
+                                                           (* jda-hl-comment-menu-current-page
+                                                              jda-hl-comment-menu-item-count)))))
+        (jda-hl-comment-jump prev-marker)
+        (setq jda-hl-comment-ring-iterator prev-iterator))
+    (error nil)))
+
+(defun jda-hl-comment-prev-page ()
+  (interactive)
+  (setq jda-hl-comment-ring-iterator -1)
+  (setq jda-hl-comment-menu-current-page
+        (mod (1- jda-hl-comment-menu-current-page)
+             jda-hl-comment-menu-total-page)))
 
 (defun jda-hl-comment-prev-ui ()
   (interactive)
@@ -244,12 +289,20 @@
          marker)))
 
 (defun jda-hl-comment-list-message ()
-  (let* ((length (ring-length jda-hl-comment-ring))
-         (message (format "Comment list(prev: ',', next: '.', jump: 'a~%c')\n\n"
-                          (+ ?a (- length 1))))
+  (let* ((length (if (< jda-hl-comment-menu-current-page
+                        (/ length jda-hl-comment-menu-item-count))
+                     jda-hl-comment-menu-item-count
+                   (mod length jda-hl-comment-menu-item-count)))
+         (message (format "Comment list(,:prev, .:next, a~%c:jump, <:prev page, >:next page [%d/%d])\n\n"
+                          (+ ?a (- length 1))
+                          (1+ jda-hl-comment-menu-current-page)
+                          jda-hl-comment-menu-total-page))
          marker)
     (dotimes (i length)
-      (setq marker (ring-ref jda-hl-comment-ring i))
+      (setq marker (ring-ref jda-hl-comment-ring
+                             (+ i
+                                (* jda-hl-comment-menu-current-page
+                                   jda-hl-comment-menu-item-count))))
       (setq message (concat message
                             (format "%s[%c] %s:%d:%s\n"
                                     (if (equal i jda-hl-comment-ring-iterator)
@@ -270,17 +323,26 @@
     (cond ((> length 0)
            (setq max-mini-window-height (+ length 3))
            (while (or (char-equal c ?,)
-                      (char-equal c ?.))
+                      (char-equal c ?.)
+                      (char-equal c ?<)
+                      (char-equal c ?>))
              (message (jda-hl-comment-list-message))
              (setq c (read-char))
-             (cond ((char-equal c ?.)
+             (cond ((char-equal c ?,)
+                    (jda-hl-comment-prev))
+                   ((char-equal c ?.)
                     (jda-hl-comment-next))
-                   ((char-equal c ?,)
-                    (jda-hl-comment-prev))))
+                   ((char-equal c ?<)
+                    (jda-hl-comment-prev-page))
+                   ((char-equal c ?>)
+                    (jda-hl-comment-next-page))))
            (setq index (- c ?a))
            (if (and (>= index 0)
                     (< index length))
-               (jda-hl-comment-jump (ring-ref jda-hl-comment-ring index)))
+               (jda-hl-comment-jump (ring-ref jda-hl-comment-ring
+                                              (+ index
+                                                 (* jda-hl-comment-menu-current-page
+                                                    jda-hl-comment-menu-item-count)))))
            (setq max-mini-window-height 0.25))
           (t
            (message "There is no comment list !!!")))))
