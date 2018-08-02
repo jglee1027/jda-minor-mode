@@ -56,7 +56,7 @@
     ("C++/l"        .   ("c++-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\)"))
     ("Emacs-Lisp"   .   ("lisp-mode-hook" "^[[:space:]]*;;;.*$"))
     ("Java/l"       .   ("java-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|//[[:space:]]*region\\)"))
-    ("ObjC/l"       .   ("objc-mode-hook" "#pragma[[:space:]]*mark[[:space:]]+.\\{2,\\}"))
+    ("ObjC/l"       .   ("objc-mode-hook" "\\(/\\*\\*\\*.*\\*\\*\\*/\\|#region\\|#pragma[[:space:]]+region\\|#pragma[[:space:]]*mark[[:space:]]+.\\{2,\\}\\)"))
     (nil            .   (nil "/\\*\\*\\*.*\\*\\*\\*/")))
   "Regular expression to search region comment"
   :type 'alist
