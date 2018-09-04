@@ -1252,7 +1252,7 @@ with the command \\[tags-loop-continue]."
                         "tell application \"Xcode\" to activate \n"
                         "tell application \"System Events\"\n"
                         "   tell process \"Xcode\"\n"
-                        "       keystroke \"?\" using {command down, option down}\n"
+                        "       keystroke \"0\" using {command down, shift down}\n"
                         "       keystroke \"%s\"\n"
                         "   end tell\n"
                         "end tell\n")))
