@@ -137,6 +137,9 @@
 (defvar jda-gf-exclusive-path-history nil)
 (defvar jda-gf-grep-query-replace-buffers-alist nil)
 
+(defvar jda-git-grep-regexp-history nil)
+(defvar jda-git-grep-command-history nil)
+
 (defvar jda-ido-find-file-files-alist nil)
 (defvar jda-ido-find-file-files-alist-root nil)
 
@@ -211,6 +214,12 @@
 (defcustom jda-find-command
   "find -L"
   "find command"
+  :type 'string
+  :group 'jda)
+
+(defcustom jda-git-grep-command
+  "cd $(git rev-parse --show-toplevel) && GIT_PAGER='' git grep -nH --no-color -i \"%s\""
+  "git-grep command"
   :type 'string
   :group 'jda)
 
@@ -788,6 +797,27 @@
                                                (jda-gf-get-find-exclusive-path-options)
                                                symbol)
                                        'jda-gf-symbol-command-history))))
+
+(defun jda-git-grep ()
+  "git-grep with regexp in git repository"
+  (interactive)
+  (jda-marker-push-marker)
+  (let (regexp)
+    (setq regexp (symbol-at-point))
+    (if (null regexp)
+        (setq regexp ""))
+    (setq regexp (read-from-minibuffer "Search in git repo: "
+                                       (format "%s" regexp)
+                                       nil
+                                       nil
+                                       'jda-git-grep-regexp-history))
+    (setq compilation-finish-function 'jda-gf-select-grep-buffer)
+    (grep-find (jda-read-shell-command (format "%s$ "
+                                               (shell-command-to-string "git rev-parse --show-toplevel"))
+                                       (format jda-git-grep-command
+                                               regexp)
+                                       'jda-git-grep-command-history))))
+
 
 (defun jda-gf-grep-query-replace-in-current-line (from to buffer)
   (let (begin end)
@@ -1595,6 +1625,10 @@ ex) make -C project/root/directory"
          :help "Find a file in the proejct using incremental search"]
         ["Find Symbol in Project..." jda-gf-symbol-at-point
          :help "Find a symbol in the project"]
+        ["Find Text in Project..." jda-gf-text-at-point
+         :help "Find a text in the project"]
+        ["Find Text in Git Repository..." jda-git-grep
+         :help "Find a text in Git repository"]
         ["Goto Symbol in Current Buffer..." jda-goto-symbol
          :help "Goto a symbol in the current buffer"]
         ["Query Replace in Proejct..." jda-gf-grep-query-replace
@@ -1668,6 +1702,7 @@ ex) make -C project/root/directory"
     (define-key map (kbd "C-c j S")     'jda-gf-text-at-point)
     (define-key map (kbd "C-c j f")     'jda-gf-find-file)
     (define-key map (kbd "C-c j F")     'jda-gf-find-file-dired)
+    (define-key map (kbd "C-c j g")     'jda-git-grep)
     (define-key map (kbd "C-c j i")     'jda-ido-find-file)
     (define-key map (kbd "C-c j I")     'jda-ido-find-file-reset-root)
     (define-key map (kbd "C-c i")       'jda-ido-find-file)
