@@ -137,6 +137,7 @@
 (defvar jda-gf-exclusive-path-history nil)
 (defvar jda-gf-grep-query-replace-buffers-alist nil)
 
+(defvar jda-git-grep-dir-history nil)
 (defvar jda-git-grep-regexp-history nil)
 (defvar jda-git-grep-command-history nil)
 
@@ -218,7 +219,7 @@
   :group 'jda)
 
 (defcustom jda-git-grep-command
-  "cd $(git rev-parse --show-toplevel) && GIT_PAGER='' git grep -nH --no-color -i \"%s\""
+  "cd %s && GIT_PAGER='' git grep -nH --color -i \"%s\"" ; git-grep-dir regexp
   "git-grep command"
   :type 'string
   :group 'jda)
@@ -802,7 +803,12 @@
   "git-grep with regexp in git repository"
   (interactive)
   (jda-marker-push-marker)
-  (let (regexp)
+  (let (regexp git-grep-dir)
+    (setq git-grep-dir (chomp
+                        (shell-command-to-string "git rev-parse --show-toplevel")))
+    (jda-set-default-directory "Git grep dir: "
+                               git-grep-dir
+                               'git-grep-dir-history)
     (setq regexp (symbol-at-point))
     (if (null regexp)
         (setq regexp ""))
@@ -812,9 +818,9 @@
                                        nil
                                        'jda-git-grep-regexp-history))
     (setq compilation-finish-function 'jda-gf-select-grep-buffer)
-    (grep-find (jda-read-shell-command (format "%s$ "
-                                               (shell-command-to-string "git rev-parse --show-toplevel"))
+    (grep-find (jda-read-shell-command "$ "
                                        (format jda-git-grep-command
+                                               git-grep-dir
                                                regexp)
                                        'jda-git-grep-command-history))))
 
