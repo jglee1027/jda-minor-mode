@@ -257,17 +257,20 @@
                             ""
                             path))
 
-(defmacro jda-set-default-directory (prompt initial-input history)
-  `(progn (if (null ,initial-input)
-              (setq ,initial-input default-directory))
-          (setq ,initial-input
-                (directory-file-name
-                 (completing-read ,prompt
-                                  'ffap-read-file-or-url-internal
-                                  nil
-                                  nil
-                                  ,initial-input
-                                  ,history)))))
+(defmacro jda-advice-ffap-read-file-or-url (prompt dir &optional history)
+  `(directory-file-name
+    (if (functionp 'helm-advice--ffap-read-file-or-url)
+        (helm-advice--ffap-read-file-or-url ,prompt ,dir)
+      (completing-read ,prompt
+                       'ffap-read-file-or-url-internal
+                       nil
+                       nil
+                       ,dir
+                       ,history))))
+
+(defmacro jda-set-default-directory (prompt dir history)
+  `(or ,dir (setq ,dir default-directory))
+  `(setq ,dir (jda-advice-ffap-read-file-or-url ,prompt ,dir ,history)))
 
 ;;;; jda-highlight
 
