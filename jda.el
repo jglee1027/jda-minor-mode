@@ -232,6 +232,22 @@
     (setq str (replace-match "" t t str)))
   str)
 
+(defun jda-advice-completing-read (prompt
+                                   collection
+                                   &optional
+                                   predicate
+                                   require-match
+                                   initial-input
+                                   history)
+  (if (functionp 'helm)
+      (let* ((helm-source
+              `((name . ,prompt)
+                (candidates . ,collection)
+                (action . (lambda (candidate) candidate)))))
+        (helm :sources '(helm-source)))
+    (completing-read prompt collection predicate require-match
+                     initial-input history)))
+
 (defun jda-icompleting-read (prompt choices)
   (let ((iswitchb-make-buflist-hook
          (lambda ()
@@ -642,8 +658,8 @@
                     (throw 'visit-file-exception
                            (buffer-file-name
                             (find-file
-                             (ido-completing-read "Find file: "
-                                                  same-name-files-list)))))))))))
+                             (jda-advice-completing-read "Find file: "
+                                                         same-name-files-list)))))))))))
 
 (defun jda-open-counterpart-file ()
   "open the header or source file related with the current file."
@@ -1162,8 +1178,8 @@ with the command \\[tags-loop-continue]."
                         jda-etags-tag-info-alist))
           line
           tag-info)
-      (setq tag-info (assoc (jda-icompleting-read "Goto tag in file: "
-                                                  tags)
+      (setq tag-info (assoc (jda-advice-completing-read "Goto tag in file: "
+                                                        tags)
                             jda-etags-tag-info-alist))
       (setq line (car (cdr tag-info)))
       (goto-line line))))
@@ -1176,7 +1192,7 @@ with the command \\[tags-loop-continue]."
       (visit-tags-table-buffer))
     (find-file
      (expand-file-name
-      (ido-completing-read
+      (jda-advice-completing-read
        "Project file: " (tags-table-files) nil t)))))
 
 ;; http://www.emacswiki.org/cgi-bin/wiki/ImenuMode
@@ -1200,7 +1216,7 @@ with the command \\[tags-loop-continue]."
                (setq imenu--index-alist nil)
                (jda-ido-goto-symbol (imenu--make-index-alist))
                (setq selected-symbol
-                     (ido-completing-read "Symbol? " symbol-names))
+                     (jda-advice-completing-read "Symbol? " symbol-names))
                (string= (car imenu--rescan-item) selected-symbol)))
       (unless (and (boundp 'mark-active) mark-active)
         (push-mark nil t nil))
@@ -1259,10 +1275,9 @@ with the command \\[tags-loop-continue]."
                           (shell-command-to-string find-command))))
            (setq jda-ido-find-file-files-alist-root jda-gf-project-root)))
     (setq chosen-name
-          (ido-completing-read "Project file: "
-                               (mapcar (lambda (x)
-                                         (car x))
-                                       jda-ido-find-file-files-alist)))
+          (jda-advice-completing-read "Project file: "
+                                      (mapcar (lambda (x) (car x))
+                                              jda-ido-find-file-files-alist)))
     (mapcar (lambda (x)
               (cond ((equal chosen-name (car x))
                      (add-to-list 'same-name-files-list
@@ -1273,8 +1288,8 @@ with the command \\[tags-loop-continue]."
     (cond ((equal same-name-files-count 1)
            (find-file (car same-name-files-list)))
           ((> same-name-files-count 1)
-           (find-file (ido-completing-read "Find file: "
-                                           same-name-files-list))))))
+           (find-file (jda-advice-completing-read "Find file: "
+                                                  same-name-files-list))))))
 
 
 (defun jda-ido-find-file-reset-root ()
