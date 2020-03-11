@@ -144,10 +144,10 @@
 (defvar jda-ido-find-file-files-alist nil)
 (defvar jda-ido-find-file-files-alist-root nil)
 
-(defvar jda-marker-ring-max 20)
+(defvar jda-marker-ring-max 26)
 (defvar jda-marker-ring (make-ring jda-marker-ring-max))
 (defvar jda-marker-ring-iterator -1)
-(defvar jda-marker-bookmark-max 10)
+(defvar jda-marker-bookmark-max 26)
 (defvar jda-marker-bookmark (make-vector jda-marker-bookmark-max nil))
 
 (defvar jda-make-command-history nil)
