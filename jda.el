@@ -1703,7 +1703,7 @@ ex) make -C project/root/directory"
 
     ;; key map
     (define-key map (kbd "C-c c")       'jda-build)
-    (define-key map (kbd "C-c h")       'jda-doc)
+    (define-key map (kbd "C-c j d")     'jda-doc)
     (define-key map (kbd "C-c j p")     'jda-open-counterpart-file)
     (define-key map (kbd "C-c j r")     'jda-gf-set-project-root-with-default-directory)
     (define-key map (kbd "C-c j e")     'jda-gf-set-exclusive-path)
