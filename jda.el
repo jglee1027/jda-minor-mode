@@ -1721,7 +1721,7 @@ ex) make -C project/root/directory"
     (define-key map (kbd "C-c j d")     'jda-doc)
     (define-key map (kbd "C-c j p")     'jda-open-counterpart-file)
     (define-key map (kbd "C-c j r")     'jda-gf-set-project-root-with-default-directory)
-    (define-key map (kbd "C-c j e")     'jda-gf-set-exclusive-path)
+    (define-key map (kbd "C-c j e")     'jda-etags-goto-tag-in-file)
     (define-key map (kbd "C-c j s")     'jda-gf-symbol-at-point)
     (define-key map (kbd "C-c j S")     'jda-gf-text-at-point)
     (define-key map (kbd "C-c j f")     'jda-gf-find-file)
