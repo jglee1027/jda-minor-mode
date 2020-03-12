@@ -239,14 +239,18 @@
                                    require-match
                                    initial-input
                                    history)
-  (if (functionp 'helm)
-      (let* ((helm-source
-              `((name . ,prompt)
-                (candidates . ,collection)
-                (action . (lambda (candidate) candidate)))))
-        (helm :sources '(helm-source)))
-    (completing-read prompt collection predicate require-match
-                     initial-input history)))
+  (cond ((functionp 'helm)
+         (let* ((helm-source
+                 `((name . ,prompt)
+                   (candidates . ,collection)
+                   (action . (lambda (candidate) candidate)))))
+           (helm :sources '(helm-source))))
+        ((functionp 'ido-completing-read)
+         (ido-completing-read prompt collection predicate require-match
+                              initial-input history))
+        (t
+         (completing-read prompt collection predicate require-match
+                          initial-input history))))
 
 (defun jda-icompleting-read (prompt choices)
   (let ((iswitchb-make-buflist-hook
@@ -273,15 +277,15 @@
                             ""
                             path))
 
-(defmacro jda-advice-ffap-read-file-or-url (prompt dir &optional history)
+(defmacro jda-advice-ffap-read-file-or-url (prompt initial-dir &optional history)
   `(directory-file-name
     (if (functionp 'helm-advice--ffap-read-file-or-url)
-        (helm-advice--ffap-read-file-or-url ,prompt ,dir)
+        (helm-advice--ffap-read-file-or-url ,prompt ,initial-dir)
       (completing-read ,prompt
                        'ffap-read-file-or-url-internal
                        nil
                        nil
-                       ,dir
+                       ,initial-dir
                        ,history))))
 
 (defmacro jda-set-default-directory (prompt dir history)
