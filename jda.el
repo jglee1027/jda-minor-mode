@@ -1742,23 +1742,28 @@ ex) make -C project/root/directory"
     (define-key map (kbd "C-c j 5")     'jda-gf-grep-query-replace)
     (define-key map (kbd "C-c j $")     'delete-trailing-whitespace)
     (define-key map (kbd "C-c j %")     'jda-gf-find-query-replace)
+    ;; tag
     (define-key map (kbd "C-c j T")     'jda-create-tags-in-default-directory)
     (define-key map (kbd "C-c j t")     'jda-create-tags)
     (define-key map (kbd "C-c j v")     'visit-tags-table)
     (define-key map (kbd "C-c j .")     'tags-apropos)
+    ;; marker
     (define-key map (kbd "C-x ,")       'jda-marker-prev-ui)
     (define-key map (kbd "C-x .")       'jda-marker-next-ui)
     (define-key map (kbd "C-x /")       'jda-marker-finish-jump)
     (define-key map (kbd "C-x ?")       'jda-marker-push-marker-menu)
+    ;; bookmark
     (define-key map (kbd "C-c p")       'jda-marker-bookmark-restore)
     (define-key map (kbd "C-c P")       'jda-marker-bookmark-save)
+    ;; align
     (define-key map (kbd "C-c |")       'align)
     (define-key map (kbd "C-c M-|")     'align-regexp)
+    ;; etc
     (define-key map (kbd "C-c j w")     'whitespace-mode)
     (define-key map (kbd "C-c j [")     'hs-minor-mode)
     (define-key map (kbd "C-c j h")     'jda-highlight-symbol-run-toggle)
     (define-key map (kbd "C-c j k")     'jda-kill-ring-save-toggle)
-    (define-key map (kbd "M-?")         'jda-buffer-file-name)
+    (define-key map (kbd "C-c j M-?")   'jda-buffer-file-name)
     map))
 
 (defvar jda-minor-mode-map (jda-minor-keymap))
