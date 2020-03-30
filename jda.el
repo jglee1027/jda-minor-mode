@@ -506,7 +506,7 @@
     (dotimes (i jda-marker-bookmark-max)
       (setq marker (elt jda-marker-bookmark i))
       (setq message (concat message
-                            (if (null marker)
+                            (if (or (null marker) (null (marker-buffer marker)))
                                 (format " [%c]\n" (+ ?a i))
                               (format " [%c] %s:%d:%s\n"
                                       (+ ?a i)
