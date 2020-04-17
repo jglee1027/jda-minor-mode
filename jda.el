@@ -543,6 +543,10 @@
            (jda-marker-jump (elt jda-marker-bookmark i))))))
 
 ;;;; utility functions
+(defun jda-file-name (filename)
+  (if (memq system-type '(ms-dos windows-nt cygwin))
+      (replace-regexp-in-string "^/\\([a-zA-Z]\\)/" "\\1:/" filename)
+    filename))
 
 (defun jda-get-sub-directory-list (dir)
   (let ((entries (directory-files dir t))
@@ -1274,7 +1278,7 @@ with the command \\[tags-loop-continue]."
                        jda-ido-find-file-files-alist-root))
            (setq jda-ido-find-file-files-alist
                  (mapcar (lambda (x)
-                           (list (file-name-nondirectory x) x))
+                           (list (file-name-nondirectory x) (jda-file-name x)))
                          (split-string
                           (shell-command-to-string find-command))))
            (setq jda-ido-find-file-files-alist-root jda-gf-project-root)))
