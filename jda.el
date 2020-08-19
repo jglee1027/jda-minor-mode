@@ -841,17 +841,20 @@
     (setq regexp (symbol-at-point))
     (if (null regexp)
         (setq regexp ""))
-    (setq regexp (read-from-minibuffer "Search in git repo: "
-                                       (format "%s" regexp)
-                                       nil
-                                       nil
-                                       'jda-git-grep-regexp-history))
-    (setq compilation-finish-function 'jda-gf-select-grep-buffer)
-    (grep-find (jda-read-shell-command "$ "
-                                       (format jda-git-grep-command
-                                               git-grep-dir
-                                               regexp)
-                                       'jda-git-grep-command-history))))
+    (cond ((functionp 'helm-grep-git-1)
+           (helm-grep-git-1 git-grep-dir t (format "%s" regexp)))
+          (t
+           (setq regexp (read-from-minibuffer "Search in git repo: "
+                                              (format "%s" regexp)
+                                              nil
+                                              nil
+                                              'jda-git-grep-regexp-history))
+           (setq compilation-finish-function 'jda-gf-select-grep-buffer)
+           (grep-find (jda-read-shell-command "$ "
+                                              (format jda-git-grep-command
+                                                      git-grep-dir
+                                                      regexp)
+                                              'jda-git-grep-command-history))))))
 
 
 (defun jda-gf-grep-query-replace-in-current-line (from to buffer)
