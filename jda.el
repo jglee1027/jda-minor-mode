@@ -226,6 +226,18 @@
   :type 'string
   :group 'jda)
 
+(defcustom jda-visit-file-super-dir-depth
+  3
+  "the value of super-dir-depth parameter of (jda-visit-file-in-dirs)"
+  :type 'integer
+  :group 'jda)
+
+(defcustom jda-visit-file-sub-dir-depth
+  3
+  "the value of sub-dir-depth parameter of (jda-visit-file-in-dirs)"
+  :type 'integer
+  :group 'jda)
+
 ;;;; common functions
 
 (defun chomp (str)
@@ -675,7 +687,8 @@
   "open the header or source file related with the current file."
   (interactive)
   (message (catch 'visit-file-exception
-             (jda-visit-file-in-dirs 2 2)
+             (jda-visit-file-in-dirs jda-visit-file-super-dir-depth
+                                     jda-visit-file-sub-dir-depth)
              (jda-visit-file-in-project)
              (throw 'visit-file-exception "Not found!"))))
 
