@@ -178,6 +178,7 @@
     ("mm"       . "*.[cChH] *.[cC][pP][pP] *.[mM] *.[mM][mM]")
     ("java"     . "*.java")
     ("el"       . "*.el")
+    ("lisp"     . "*.lisp")
     ("rb"       . "*.rb")
     (nil        . "*.*"))
   "Counterpart extensions"
