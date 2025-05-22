@@ -626,7 +626,7 @@
     (dotimes (i super-dir-depth)
       (setq current-dir (jda-get-super-directory current-dir))
       (if (equal current-dir "")
-          (return))
+          (cl-return))
       (setq sub-dir-list (jda-get-sub-directory-list current-dir))
       (jda-visit-file-in-sub-dirs sub-dir-list
                                   file-name-non-dir
